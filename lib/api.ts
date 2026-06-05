@@ -56,6 +56,40 @@ export interface OwnerDashboardData {
 
 export type DashboardData = WorkerDashboardData | OwnerDashboardData;
 
+export interface WorkerSubmission {
+  worker_id: number;
+  worker_name: string;
+  total_usd: number;
+  total_uzs: number;
+  count: number;
+  confirmed_at: string;
+  status: "confirmed" | "pending" | "not_submitted";
+}
+
+export interface AccountantData {
+  period: string;
+  week_label: string;
+  received: WorkerSubmission[];
+  pending: WorkerSubmission[];
+  summary: {
+    total_usd: number;
+    total_uzs: number;
+    confirmed_count: number;
+    pending_count: number;
+  };
+  month_summary: {
+    total_usd: number;
+    total_uzs: number;
+    confirmed_count: number;
+  };
+  own_income: {
+    total_usd: number;
+    total_uzs: number;
+    count: number;
+    month_total: number;
+  };
+}
+
 async function apiFetch(path: string): Promise<unknown> {
   const res = await fetch(path, { cache: "no-store" });
   if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -70,3 +104,6 @@ export const fetchDashboard = (userId: number, period = "week") =>
 
 export const fetchHistory = (userId: number, limit = 30) =>
   apiFetch(`/api/history?user_id=${userId}&limit=${limit}`) as Promise<{ incomes: IncomeItem[]; total: number }>;
+
+export const fetchAccountant = (userId: number, period = "week") =>
+  apiFetch(`/api/accountant?user_id=${userId}&period=${period}`) as Promise<AccountantData>;
