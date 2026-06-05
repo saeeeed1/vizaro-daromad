@@ -1,19 +1,29 @@
 @import "tailwindcss";
 
 :root {
-  --bg-primary:     #0a0f0a;
-  --bg-secondary:   #0f1a0f;
-  --bg-card:        #132213;
-  --bg-card-hover:  #1a2e1a;
-  --accent-primary: #00d084;
-  --accent-second:  #00ff9d;
+  /* Asosiy fonlar — qora/kulrang */
+  --bg-primary:     #0d0d0d;
+  --bg-secondary:   #141414;
+  --bg-card:        #1a1a1a;
+  --bg-card-hover:  #202020;
+
+  /* Accent — faqat muhim joylarda yashil */
+  --accent-primary: #00c07a;
+  --accent-second:  #00e090;
   --accent-gold:    #ffd700;
-  --text-primary:   #e8f5e8;
-  --text-secondary: #7ab87a;
-  --text-muted:     #4a6b4a;
+
+  /* Matn — oq va kulrang */
+  --text-primary:   #ffffff;
+  --text-secondary: #a0a0a0;
+  --text-muted:     #606060;
+
+  /* Chegara — ingichka kulrang */
+  --border:         #2a2a2a;
+
+  /* Holat ranglari */
   --danger:         #ff4757;
   --warning:        #ffa502;
-  --border:         #1e3a1e;
+  --success:        #00c07a;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -59,13 +69,14 @@ html, body {
 }
 
 .badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:0.7rem; font-weight:600; }
-.badge-green  { background:rgba(0,208,132,0.15); color:var(--accent-primary); }
+.badge-green  { background:rgba(0,192,122,0.15); color:var(--accent-primary); }
 .badge-yellow { background:rgba(255,165,2,0.15);  color:var(--warning); }
 .badge-red    { background:rgba(255,71,87,0.15);  color:var(--danger); }
 
 .tab-btn {
   padding:5px 13px; border-radius:20px; font-size:0.78rem; font-weight:600;
   color:var(--text-secondary); background:transparent; border:none; cursor:pointer;
+  transition: all 0.15s;
 }
 .tab-btn.active { background:var(--accent-primary); color:#000; }
 
