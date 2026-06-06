@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
@@ -8,6 +8,9 @@ import {
 import type { WorkerDashboardData, IncomeItem } from "@/lib/api";
 
 const PERIODS = ["1 oy", "3 oy", "6 oy", "1 yil"] as const;
+const PERIOD_MAP: Record<string, string> = {
+  "1 oy": "month", "3 oy": "3month", "6 oy": "6month", "1 yil": "year",
+};
 
 function fmt(amount: number, currency?: string) {
   if (currency === "UZS")
@@ -29,13 +32,37 @@ function statusBadge(s: string) {
 }
 
 export default function WorkerDashboard({
-  data, name, hideSubmission = false,
+  data, name, hideSubmission = false, userId,
 }: {
   data: WorkerDashboardData;
   name: string;
   hideSubmission?: boolean;
+  userId: number;
 }) {
-  const [period, setPeriod] = useState(0);
+  const [period, setPeriod]           = useState("");
+  const [chartData, setChartData]     = useState(data.chart);
+  const [chartLoading, setChartLoading] = useState(false);
+
+  useEffect(() => {
+    setChartData(data.chart);
+    setPeriod("");
+  }, [data]);
+
+  const handlePeriodClick = async (label: string) => {
+    if (period === label) return;
+    setPeriod(label);
+    setChartLoading(true);
+    try {
+      const res  = await fetch(`/api/dashboard?user_id=${userId}&period=${PERIOD_MAP[label]}`);
+      const json = await res.json();
+      if (json.chart) setChartData(json.chart);
+    } catch {
+      // network error — keep current chart
+    } finally {
+      setChartLoading(false);
+    }
+  };
+
   const weekPct = data.month_total > 0
     ? Math.min(100, (data.week_total / data.month_total) * 100)
     : 0;
@@ -101,8 +128,12 @@ export default function WorkerDashboard({
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>📈 Daromad grafigi</span>
           <div style={{ display: "flex", gap: 4, background: "var(--bg-secondary)", borderRadius: 20, padding: 3 }}>
-            {PERIODS.map((p, i) => (
-              <button key={p} className={`tab-btn${period === i ? " active" : ""}`} onClick={() => setPeriod(i)}>
+            {PERIODS.map((p) => (
+              <button
+                key={p}
+                className={`tab-btn${period === p ? " active" : ""}`}
+                onClick={() => handlePeriodClick(p)}
+              >
                 {p}
               </button>
             ))}
@@ -110,7 +141,10 @@ export default function WorkerDashboard({
         </div>
 
         <ResponsiveContainer width="100%" height={160}>
-          <AreaChart data={data.chart} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+          <AreaChart
+            data={chartLoading ? [] : chartData}
+            margin={{ top: 4, right: 4, left: -20, bottom: 0 }}
+          >
             <defs>
               <linearGradient id="gGreen" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%"  stopColor="#00d084" stopOpacity={0.35} />

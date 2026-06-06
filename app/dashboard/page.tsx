@@ -201,7 +201,7 @@ export default function DashboardPage() {
       <>
         <div style={{ paddingBottom: `calc(90px + max(env(safe-area-inset-bottom), 20px))` }}>
           {activeTab === "manager" && workerData ? (
-            <WorkerDashboard data={workerData} name={user.name || user.username} hideSubmission={true} />
+            <WorkerDashboard data={workerData} name={user.name || user.username} hideSubmission={true} userId={user.user_id} />
           ) : activeTab === "accountant" ? (
             accContent()
           ) : null}
@@ -211,5 +211,5 @@ export default function DashboardPage() {
     );
   }
 
-  return <WorkerDashboard data={data as WorkerDashboardData} name={user.name || user.username} />;
+  return <WorkerDashboard data={data as WorkerDashboardData} name={user.name || user.username} userId={user.user_id} />;
 }
