@@ -39,14 +39,19 @@ export default function WorkerDashboard({
   hideSubmission?: boolean;
   userId: number;
 }) {
-  const [period, setPeriod]           = useState("");
-  const [chartData, setChartData]     = useState(data.chart);
+  const [period, setPeriod]             = useState("1 oy");
+  const [chartData, setChartData]       = useState(data.chart);
   const [chartLoading, setChartLoading] = useState(false);
 
   useEffect(() => {
-    setChartData(data.chart);
-    setPeriod("");
-  }, [data]);
+    setPeriod("1 oy");
+    setChartLoading(true);
+    fetch(`/api/dashboard?user_id=${userId}&period=month`)
+      .then(r => r.json())
+      .then(j => { if (j.chart) setChartData(j.chart); })
+      .catch(() => setChartData(data.chart))
+      .finally(() => setChartLoading(false));
+  }, [data, userId]);
 
   const handlePeriodClick = async (label: string) => {
     if (period === label) return;
@@ -131,8 +136,18 @@ export default function WorkerDashboard({
             {PERIODS.map((p) => (
               <button
                 key={p}
-                className={`tab-btn${period === p ? " active" : ""}`}
                 onClick={() => handlePeriodClick(p)}
+                style={{
+                  padding: "4px 10px",
+                  borderRadius: 16,
+                  border: "none",
+                  fontSize: "0.75rem",
+                  fontWeight: period === p ? 700 : 400,
+                  background: period === p ? "var(--accent-primary)" : "transparent",
+                  color: period === p ? "#000" : "var(--text-secondary)",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
               >
                 {p}
               </button>
