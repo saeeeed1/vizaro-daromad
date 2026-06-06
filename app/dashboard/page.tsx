@@ -55,10 +55,14 @@ function BottomTabs({
         zIndex: 100,
         background: "#111",
         borderTop: "1px solid #222",
-        padding: "8px 12px",
-        paddingBottom: "calc(8px + env(safe-area-inset-bottom))",
+        paddingBottom: "max(env(safe-area-inset-bottom), 20px)",
+        height: `calc(56px + max(env(safe-area-inset-bottom), 20px))`,
+        alignItems: "flex-start",
+        paddingTop: "8px",
         display: "flex",
         gap: 8,
+        paddingLeft: 12,
+        paddingRight: 12,
       }}
     >
       {tabs.map(({ key, icon, label }) => (
@@ -195,7 +199,7 @@ export default function DashboardPage() {
 
     return (
       <>
-        <div style={{ paddingBottom: 90 }}>
+        <div style={{ paddingBottom: `calc(90px + max(env(safe-area-inset-bottom), 20px))` }}>
           {activeTab === "manager" && workerData ? (
             <WorkerDashboard data={workerData} name={user.name || user.username} hideSubmission={true} />
           ) : activeTab === "accountant" ? (
