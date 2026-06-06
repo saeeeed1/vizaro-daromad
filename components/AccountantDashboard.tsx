@@ -87,7 +87,7 @@ export default function AccountantDashboard({
   const isWeek = tab === 0;
   const sm     = isWeek ? data.summary : data.month_summary;
 
-  // All workers for the list: confirmed first, then pending/not_submitted
+  // All managers for the list: confirmed first, then pending/not_submitted
   const allWorkers = [...data.received, ...data.pending];
   const maxUsd     = Math.max(...allWorkers.map((w) => w.total_usd), 1);
 
@@ -124,7 +124,7 @@ export default function AccountantDashboard({
       {/* ── Tab + ishchilar ro'yxati ───────────────── */}
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>📋 Ishchilar holati</span>
+          <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>📋 Menejerlar holati</span>
           <div style={{ display: "flex", gap: 4, background: "var(--bg-secondary)", borderRadius: 20, padding: 3 }}>
             {TABS.map((t, i) => (
               <button key={t} className={`tab-btn${tab === i ? " active" : ""}`} onClick={() => setTab(i)}>

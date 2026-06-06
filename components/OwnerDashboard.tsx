@@ -64,7 +64,7 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
       {/* ── Ishchilar reytingi ─────────────────────── */}
       <div className="card">
         <div style={{ fontWeight: 600, fontSize: "0.85rem", marginBottom: 12 }}>
-          🏆 Ishchilar reytingi
+          🏆 Menejerlar reytingi
         </div>
 
         {data.workers.map((w, i) => (

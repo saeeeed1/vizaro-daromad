@@ -1,6 +1,6 @@
 export interface UserInfo {
   user_id: number;
-  role: "worker" | "accountant" | "owner" | "unknown";
+  role: "manager" | "accountant" | "owner" | "unknown";
   name: string;
   username: string;
   authorized: boolean;
@@ -33,7 +33,7 @@ export interface WorkerStat {
 }
 
 export interface WorkerDashboardData {
-  role: "worker" | "accountant";
+  role: "manager" | "accountant";
   week_total: number;
   month_total: number;
   week_count: number;
