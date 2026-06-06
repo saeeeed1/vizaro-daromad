@@ -105,5 +105,10 @@ export const fetchDashboard = (userId: number, period = "week") =>
 export const fetchHistory = (userId: number, limit = 30) =>
   apiFetch(`/api/history?user_id=${userId}&limit=${limit}`) as Promise<{ incomes: IncomeItem[]; total: number }>;
 
+export interface AccountantLockedData {
+  show: false;
+  next_saturday: string;
+}
+
 export const fetchAccountant = (userId: number, period = "week") =>
-  apiFetch(`/api/accountant?user_id=${userId}&period=${period}`) as Promise<AccountantData>;
+  apiFetch(`/api/accountant?user_id=${userId}&period=${period}`) as Promise<AccountantData | AccountantLockedData>;

@@ -8,7 +8,7 @@ import AccountantDashboard from "@/components/AccountantDashboard";
 import { fetchMe, fetchDashboard, fetchAccountant } from "@/lib/api";
 import type {
   UserInfo, DashboardData,
-  WorkerDashboardData, OwnerDashboardData, AccountantData,
+  WorkerDashboardData, OwnerDashboardData, AccountantData, AccountantLockedData,
 } from "@/lib/api";
 
 declare global {
@@ -36,7 +36,7 @@ function getUserId(): number {
 
 export default function DashboardPage() {
   const [user,    setUser]    = useState<UserInfo | null>(null);
-  const [data,    setData]    = useState<DashboardData | AccountantData | null>(null);
+  const [data,    setData]    = useState<DashboardData | AccountantData | AccountantLockedData | null>(null);
   const [error,   setError]   = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -93,7 +93,29 @@ export default function DashboardPage() {
   }
 
   if (user.role === "accountant") {
-    return <AccountantDashboard data={data as AccountantData} name={user.name || user.username} />;
+    const accData = data as AccountantData | AccountantLockedData;
+    if ("show" in accData && !accData.show) {
+      const { next_saturday } = accData as AccountantLockedData;
+      const UZ_M = ["yan","fev","mar","apr","may","iyun","iyul","avg","sen","okt","noy","dek"];
+      const [, mo, dy] = next_saturday.split("-").map(Number);
+      const nextSatStr = `${dy}-${UZ_M[mo - 1]}`;
+      return (
+        <div style={{ padding: 24, paddingTop: 60 }}>
+          <div className="card" style={{ textAlign: "center", padding: "36px 16px" }}>
+            <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🔒</div>
+            <div style={{ fontWeight: 700, fontSize: "1rem", marginBottom: 6 }}>Haftalik hisobot</div>
+            <div style={{ color: "var(--text-secondary)", fontSize: "0.85rem", marginBottom: 20 }}>
+              Faqat shanba kuni ko&apos;rinadi
+            </div>
+            <div style={{ borderTop: "1px solid var(--border)", paddingTop: 16 }}>
+              <div style={{ color: "var(--text-muted)", fontSize: "0.78rem", marginBottom: 6 }}>⏳ Keyingi shanba:</div>
+              <div style={{ color: "var(--accent-primary)", fontWeight: 700, fontSize: "1.15rem" }}>{nextSatStr}</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return <AccountantDashboard data={accData as AccountantData} name={user.name || user.username} />;
   }
 
   return <WorkerDashboard data={data as WorkerDashboardData} name={user.name || user.username} />;
