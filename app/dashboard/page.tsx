@@ -34,11 +34,70 @@ function getUserId(): number {
   return 0;
 }
 
+function BottomTabs({
+  active,
+  onChange,
+}: {
+  active: "manager" | "accountant";
+  onChange: (t: "manager" | "accountant") => void;
+}) {
+  const tabs = [
+    { key: "manager" as const,   icon: "💼", label: "Menejer"  },
+    { key: "accountant" as const, icon: "📒", label: "Bugalter" },
+  ];
+  return (
+    <div
+      style={{
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 100,
+        background: "#111",
+        borderTop: "1px solid #222",
+        padding: "8px 12px",
+        paddingBottom: "calc(8px + env(safe-area-inset-bottom))",
+        display: "flex",
+        gap: 8,
+      }}
+    >
+      {tabs.map(({ key, icon, label }) => (
+        <button
+          key={key}
+          onClick={() => onChange(key)}
+          style={{
+            flex: 1,
+            padding: "10px 0",
+            background: active === key ? "#00c07a" : "#1a1a1a",
+            color: active === key ? "#000" : "#666",
+            border: "none",
+            borderRadius: 12,
+            cursor: "pointer",
+            fontWeight: active === key ? 700 : 500,
+            fontSize: "0.82rem",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 2,
+            transition: "background 0.15s, color 0.15s",
+          }}
+        >
+          <span style={{ fontSize: "1.1rem" }}>{icon}</span>
+          <span>{label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function DashboardPage() {
-  const [user,    setUser]    = useState<UserInfo | null>(null);
-  const [data,    setData]    = useState<DashboardData | AccountantData | AccountantLockedData | null>(null);
-  const [error,   setError]   = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user,       setUser]       = useState<UserInfo | null>(null);
+  const [data,       setData]       = useState<DashboardData | null>(null);
+  const [workerData, setWorkerData] = useState<WorkerDashboardData | null>(null);
+  const [accData,    setAccData]    = useState<AccountantData | AccountantLockedData | null>(null);
+  const [activeTab,  setActiveTab]  = useState<"manager" | "accountant">("manager");
+  const [error,      setError]      = useState<string | null>(null);
+  const [loading,    setLoading]    = useState(true);
 
   useEffect(() => {
     window.Telegram?.WebApp?.ready?.();
@@ -59,10 +118,13 @@ export default function DashboardPage() {
         }
         setUser(u);
 
-        // Rolga qarab tegishli endpoint
         if (u.role === "accountant") {
-          const d = await fetchAccountant(uid, "week");
-          setData(d);
+          const [wd, ad] = await Promise.all([
+            fetchDashboard(uid, "week"),
+            fetchAccountant(uid, "week"),
+          ]);
+          setWorkerData(wd as WorkerDashboardData);
+          setAccData(ad);
         } else {
           const d = await fetchDashboard(uid, "week");
           setData(d);
@@ -86,36 +148,63 @@ export default function DashboardPage() {
     );
   }
 
-  if (!user || !data) return null;
+  if (!user) return null;
 
   if (user.role === "owner") {
     return <OwnerDashboard data={data as OwnerDashboardData} />;
   }
 
   if (user.role === "accountant") {
-    const accData = data as AccountantData | AccountantLockedData;
-    if ("show" in accData && !accData.show) {
-      const { next_saturday } = accData as AccountantLockedData;
-      const UZ_M = ["yan","fev","mar","apr","may","iyun","iyul","avg","sen","okt","noy","dek"];
-      const [, mo, dy] = next_saturday.split("-").map(Number);
-      const nextSatStr = `${dy}-${UZ_M[mo - 1]}`;
-      return (
-        <div style={{ padding: 24, paddingTop: 60 }}>
-          <div className="card" style={{ textAlign: "center", padding: "36px 16px" }}>
-            <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🔒</div>
-            <div style={{ fontWeight: 700, fontSize: "1rem", marginBottom: 6 }}>Haftalik hisobot</div>
-            <div style={{ color: "var(--text-secondary)", fontSize: "0.85rem", marginBottom: 20 }}>
-              Faqat shanba kuni ko&apos;rinadi
-            </div>
-            <div style={{ borderTop: "1px solid var(--border)", paddingTop: 16 }}>
-              <div style={{ color: "var(--text-muted)", fontSize: "0.78rem", marginBottom: 6 }}>⏳ Keyingi shanba:</div>
-              <div style={{ color: "var(--accent-primary)", fontWeight: 700, fontSize: "1.15rem" }}>{nextSatStr}</div>
+    const UZ_M = ["yan","fev","mar","apr","may","iyun","iyul","avg","sen","okt","noy","dek"];
+
+    const accContent = () => {
+      if (!accData) return null;
+      if ("show" in accData && !accData.show) {
+        const { next_saturday } = accData as AccountantLockedData;
+        const [, mo, dy] = next_saturday.split("-").map(Number);
+        const nextSatStr = `${dy}-${UZ_M[mo - 1]}`;
+        return (
+          <div style={{ padding: 24, paddingTop: 60 }}>
+            <div className="card" style={{ textAlign: "center", padding: "36px 16px" }}>
+              <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🔒</div>
+              <div style={{ fontWeight: 700, fontSize: "1rem", marginBottom: 6 }}>
+                Haftalik hisobot
+              </div>
+              <div style={{ color: "var(--text-secondary)", fontSize: "0.85rem", marginBottom: 20 }}>
+                Faqat shanba kuni ko&apos;rinadi
+              </div>
+              <div style={{ borderTop: "1px solid var(--border)", paddingTop: 16 }}>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.78rem", marginBottom: 6 }}>
+                  ⏳ Keyingi shanba:
+                </div>
+                <div style={{ color: "var(--accent-primary)", fontWeight: 700, fontSize: "1.15rem" }}>
+                  {nextSatStr}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        );
+      }
+      return (
+        <AccountantDashboard
+          data={accData as AccountantData}
+          name={user.name || user.username}
+        />
       );
-    }
-    return <AccountantDashboard data={accData as AccountantData} name={user.name || user.username} />;
+    };
+
+    return (
+      <>
+        <div style={{ paddingBottom: 90 }}>
+          {activeTab === "manager" && workerData ? (
+            <WorkerDashboard data={workerData} name={user.name || user.username} />
+          ) : activeTab === "accountant" ? (
+            accContent()
+          ) : null}
+        </div>
+        <BottomTabs active={activeTab} onChange={setActiveTab} />
+      </>
+    );
   }
 
   return <WorkerDashboard data={data as WorkerDashboardData} name={user.name || user.username} />;
