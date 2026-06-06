@@ -197,7 +197,7 @@ export default function DashboardPage() {
       <>
         <div style={{ paddingBottom: 90 }}>
           {activeTab === "manager" && workerData ? (
-            <WorkerDashboard data={workerData} name={user.name || user.username} />
+            <WorkerDashboard data={workerData} name={user.name || user.username} hideSubmission={true} />
           ) : activeTab === "accountant" ? (
             accContent()
           ) : null}

@@ -29,10 +29,11 @@ function statusBadge(s: string) {
 }
 
 export default function WorkerDashboard({
-  data, name,
+  data, name, hideSubmission = false,
 }: {
   data: WorkerDashboardData;
   name: string;
+  hideSubmission?: boolean;
 }) {
   const [period, setPeriod] = useState(0);
   const weekPct = data.month_total > 0
@@ -77,13 +78,16 @@ export default function WorkerDashboard({
         </div>
       </div>
 
-      {/* ── 3 stat karta ──────────────────────────── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-        {[
-          { icon: "📦", val: data.week_count,      label: "Kirimlar" },
-          { icon: "✅", val: data.confirmed_count, label: "Topshirildi" },
-          { icon: "⏳", val: data.pending_count,   label: "Kutilmoqda" },
-        ].map(({ icon, val, label }) => (
+      {/* ── Stat kartalar ─────────────────────────── */}
+      <div style={{ display: "grid", gridTemplateColumns: hideSubmission ? "1fr" : "1fr 1fr 1fr", gap: 8 }}>
+        {(hideSubmission
+          ? [{ icon: "📦", val: data.week_count, label: "Bu hafta kirimlar" }]
+          : [
+              { icon: "📦", val: data.week_count,      label: "Kirimlar"    },
+              { icon: "✅", val: data.confirmed_count, label: "Topshirildi" },
+              { icon: "⏳", val: data.pending_count,   label: "Kutilmoqda"  },
+            ]
+        ).map(({ icon, val, label }) => (
           <div key={label} className="card" style={{ textAlign: "center", padding: "12px 8px" }}>
             <div style={{ fontSize: "1.3rem" }}>{icon}</div>
             <div style={{ color: "var(--accent-primary)", fontWeight: 700, fontSize: "1.3rem" }}>{val}</div>
