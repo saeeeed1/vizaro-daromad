@@ -158,7 +158,7 @@ export default function WorkerDashboard({
             </span>
           </div>
           <button
-            onClick={() => window.Telegram?.WebApp?.close()}
+            onClick={() => window.Telegram?.WebApp?.close?.()}
             style={{
               marginTop: 10, width: "100%", padding: "8px 0",
               background: "#ef4444", color: "#fff", border: "none",
