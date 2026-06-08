@@ -23,6 +23,20 @@ export interface ChartPoint {
   [key: string]: number | string | undefined;
 }
 
+export interface PendingSubmission {
+  week: string;
+  week_start: string;
+  total: number;
+  submitted_at?: string;
+}
+
+export interface PendingListItem {
+  worker_name: string;
+  week: string;
+  week_start: string;
+  total: number;
+}
+
 export interface WorkerStat {
   id: number;
   name: string;
@@ -42,6 +56,8 @@ export interface WorkerDashboardData {
   pending_count: number;
   chart: ChartPoint[];
   recent: IncomeItem[];
+  pending_submissions?: PendingSubmission[];
+  pending_total_all?: number;
 }
 
 export interface OwnerDashboardData {
@@ -52,6 +68,8 @@ export interface OwnerDashboardData {
   pending_total: number;
   workers: WorkerStat[];
   chart: ChartPoint[];
+  pending_list?: PendingListItem[];
+  pending_list_total?: number;
 }
 
 export type DashboardData = WorkerDashboardData | OwnerDashboardData;
@@ -88,6 +106,8 @@ export interface AccountantData {
     count: number;
     month_total: number;
   };
+  old_pending?: PendingListItem[];
+  old_pending_total?: number;
 }
 
 async function apiFetch(path: string): Promise<unknown> {

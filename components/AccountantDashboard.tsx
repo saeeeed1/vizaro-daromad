@@ -1,6 +1,6 @@
 "use client";
 
-import type { AccountantData, WorkerSubmission } from "@/lib/api";
+import type { AccountantData, WorkerSubmission, PendingListItem } from "@/lib/api";
 
 function fmtUSD(n: number) {
   return "$" + new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
@@ -96,6 +96,44 @@ export default function AccountantDashboard({
           allWorkers.map((sub) => <WorkerCard key={sub.worker_id} sub={sub} />)
         )}
       </div>
+
+      {/* Eski pending (oldingi haftalar) */}
+      {data.old_pending && data.old_pending.length > 0 && (
+        <div style={{
+          border: "1px solid #f59e0b33",
+          borderLeft: "3px solid #f59e0b",
+          borderRadius: 12,
+          padding: "12px 14px",
+          background: "#f59e0b0d",
+        }}>
+          <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#f59e0b", marginBottom: 10 }}>
+            ⏳ Kutilmoqda (eski)
+          </div>
+          {data.old_pending.map((item: PendingListItem) => (
+            <div key={`${item.week_start}-${item.worker_name}`}
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+              <div>
+                <span style={{ fontWeight: 600, fontSize: "0.82rem" }}>{item.worker_name}</span>
+                <span style={{ color: "var(--text-muted)", fontSize: "0.75rem", marginLeft: 6 }}>
+                  · {item.week}
+                </span>
+              </div>
+              <span style={{ fontWeight: 600, color: "#f59e0b", fontSize: "0.82rem" }}>
+                ${item.total.toFixed(2)}
+              </span>
+            </div>
+          ))}
+          <div style={{
+            borderTop: "1px solid #f59e0b33", paddingTop: 8, marginTop: 4,
+            display: "flex", justifyContent: "space-between",
+          }}>
+            <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>Jami:</span>
+            <span style={{ fontWeight: 700, color: "#f59e0b", fontSize: "0.88rem" }}>
+              ${(data.old_pending_total ?? 0).toFixed(2)}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Jami */}
       <div className="card safe-bottom">

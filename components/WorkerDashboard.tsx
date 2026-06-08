@@ -128,6 +128,48 @@ export default function WorkerDashboard({
         ))}
       </div>
 
+      {/* ── Pending submissions (qizil karta) ───────── */}
+      {data.pending_submissions && data.pending_submissions.length > 0 && (
+        <div style={{
+          border: "1px solid #ef444433",
+          borderLeft: "3px solid #ef4444",
+          borderRadius: 12,
+          padding: "12px 14px",
+          background: "#ef44440d",
+        }}>
+          <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#ef4444", marginBottom: 10 }}>
+            ⚠️ Topshirilmagan kirimlar
+          </div>
+          {data.pending_submissions.map((sub) => (
+            <div key={sub.week_start} style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+              <span style={{ color: "var(--text-secondary)", fontSize: "0.82rem" }}>{sub.week}</span>
+              <span style={{ fontWeight: 600, color: "#ef4444", fontSize: "0.82rem" }}>
+                ${sub.total.toFixed(2)}
+              </span>
+            </div>
+          ))}
+          <div style={{
+            borderTop: "1px solid #ef444433", paddingTop: 8, marginTop: 4,
+            display: "flex", justifyContent: "space-between",
+          }}>
+            <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>Jami qarzdorlik:</span>
+            <span style={{ fontWeight: 700, color: "#ef4444", fontSize: "0.88rem" }}>
+              ${(data.pending_total_all ?? 0).toFixed(2)}
+            </span>
+          </div>
+          <button
+            onClick={() => window.Telegram?.WebApp?.close()}
+            style={{
+              marginTop: 10, width: "100%", padding: "8px 0",
+              background: "#ef4444", color: "#fff", border: "none",
+              borderRadius: 8, fontWeight: 600, fontSize: "0.85rem", cursor: "pointer",
+            }}
+          >
+            📦 Hozir topshirish
+          </button>
+        </div>
+      )}
+
       {/* ── Chart ─────────────────────────────────── */}
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
