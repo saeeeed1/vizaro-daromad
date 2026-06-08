@@ -120,115 +120,85 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
 
       {/* ── Reyting + period tabs ─────────────────── */}
       <div className="card">
-        {/* Header: sarlavha + tabs */}
-        <div style={{
-          display: "flex", justifyContent: "space-between",
-          alignItems: "center", marginBottom: 14,
-        }}>
-          <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>🏆 Menejerlar reytingi</span>
-
-          <div style={{
-            display: "flex", gap: 3,
-            background: "var(--bg-secondary)",
-            borderRadius: 20, padding: "3px 4px",
-          }}>
-            {PERIODS.map((p) => (
-              <button
-                key={p}
-                onClick={() => handlePeriod(p)}
-                style={{
-                  padding: "3px 9px",
-                  borderRadius: 16,
-                  border: "none",
-                  fontSize: "0.72rem",
-                  fontWeight: period === p ? 700 : 400,
-                  background: period === p ? "var(--accent-primary)" : "transparent",
-                  color:      period === p ? "#000"                  : "var(--text-secondary)",
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                }}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
+        <div style={{ fontWeight: 600, fontSize: "0.85rem", marginBottom: 10 }}>
+          🏆 Menejerlar reytingi
         </div>
 
-        {/* Manager kartalar */}
+        {/* Period Tabs */}
+        <div style={{
+          display: "flex",
+          gap: 6,
+          marginBottom: 12,
+          background: "#111",
+          borderRadius: 12,
+          padding: 4,
+        }}>
+          {PERIODS.map((p) => (
+            <button
+              key={p}
+              onClick={() => handlePeriod(p)}
+              style={{
+                flex: 1,
+                padding: "8px 4px",
+                borderRadius: 8,
+                border: "none",
+                fontSize: "0.78rem",
+                fontWeight: period === p ? 700 : 400,
+                background: period === p ? "#00c07a" : "transparent",
+                color: period === p ? "#000" : "#666",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+
+        {/* Manager list */}
         {loading ? (
-          <div style={{
-            color: "var(--text-muted)", textAlign: "center",
-            padding: "28px 0", fontSize: "0.85rem",
-          }}>
+          <div style={{ textAlign: "center", color: "#666", padding: 20 }}>
             ⌛ Yuklanmoqda...
           </div>
-        ) : (
-          managers.map((m, i) => (
-            <div key={m.name} style={{ marginBottom: 14 }}>
-              <div style={{
-                display: "flex", justifyContent: "space-between",
-                alignItems: "flex-start", marginBottom: 5,
-              }}>
-                {/* Ism + count */}
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                  <span style={{ fontSize: "1.1rem", lineHeight: 1.2 }}>
-                    {MEDALS[i] ?? `${i + 1}.`}
-                  </span>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: "0.88rem" }}>{m.name}</div>
-                    {m.count > 0 && (
-                      <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginTop: 1 }}>
-                        {m.count} ta kirim
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Summa + sub badge (faqat initial data uchun) */}
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{
-                    color: WORKER_COLORS[i] ?? "#00d084",
-                    fontWeight: 700, fontSize: "0.92rem",
-                  }}>
-                    {fmt(m.total)}
-                  </span>
-                  {!pdata && (
-                    subBadge(data.workers[i]?.sub_status ?? "none")
-                  )}
-                </div>
+        ) : (managers || []).map((m, i) => (
+          <div key={m.name} style={{
+            background: "#1a1a1a",
+            borderRadius: 12,
+            padding: "12px",
+            marginBottom: 8,
+            borderLeft: `3px solid ${WORKER_COLORS[i % WORKER_COLORS.length]}`,
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <span style={{ marginRight: 6 }}>{MEDALS[i] || ""}</span>
+                <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>{m.name}</span>
               </div>
-
-              {/* Progress bar */}
-              <div className="progress-bar">
-                <div style={{
-                  height: "100%", borderRadius: 2,
-                  background: WORKER_COLORS[i] ?? "#00d084",
-                  width: `${m.percentage}%`,
-                  transition: "width 0.6s ease",
-                }} />
-              </div>
-              <div style={{
-                textAlign: "right", color: "var(--text-muted)",
-                fontSize: "0.7rem", marginTop: 3,
-              }}>
-                {m.percentage.toFixed(1)}%
-              </div>
+              <span style={{ color: "#00c07a", fontWeight: 700 }}>${m.total.toFixed(2)}</span>
             </div>
-          ))
-        )}
+            <div style={{ color: "#666", fontSize: "0.75rem", marginTop: 4 }}>
+              {m.count} ta kirim
+            </div>
+            {/* Progress bar */}
+            <div style={{ background: "#222", borderRadius: 4, height: 4, marginTop: 8 }}>
+              <div style={{
+                background: WORKER_COLORS[i % WORKER_COLORS.length],
+                borderRadius: 4,
+                height: 4,
+                width: `${m.percentage || 0}%`,
+                transition: "width 0.5s",
+              }} />
+            </div>
+          </div>
+        ))}
 
-        {/* Jami footer */}
+        {/* Footer */}
         <div style={{
-          borderTop: "1px solid #1e3a1e",
-          paddingTop: 10, marginTop: 2,
-          display: "flex", justifyContent: "space-between", alignItems: "center",
+          textAlign: "center",
+          color: "#666",
+          fontSize: "0.78rem",
+          padding: "8px 0",
         }}>
-          <span style={{ color: "var(--text-muted)", fontSize: "0.78rem" }}>
-            💰 Jami{periodLabel ? ` · ${periodLabel}` : ""}:
-          </span>
-          <span style={{ fontWeight: 700, color: "var(--accent-primary)", fontSize: "0.9rem" }}>
-            {fmt(grandTotal)}
-          </span>
+          💰 Jami · {pdata?.period_label || ""}: ${(pdata?.grand_total || 0).toFixed(2)}
         </div>
       </div>
 
