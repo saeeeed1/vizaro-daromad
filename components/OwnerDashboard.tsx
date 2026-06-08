@@ -1,30 +1,87 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
 } from "recharts";
-import type { OwnerDashboardData, WorkerStat } from "@/lib/api";
+import type { OwnerDashboardData, WorkerStat, OwnerPeriodData, ManagerStat } from "@/lib/api";
 
 const WORKER_COLORS = ["#00d084", "#00ff9d", "#ffd700", "#ffa502", "#ff6b9d"];
-const MEDALS = ["🥇", "🥈", "🥉"];
+const MEDALS        = ["🥇", "🥈", "🥉"];
+const PERIODS       = ["1 oy", "3 oy", "6 oy", "1 yil"] as const;
+const PERIOD_API: Record<string, string> = {
+  "1 oy": "month", "3 oy": "3month", "6 oy": "6month", "1 yil": "year",
+};
 
 function fmt(n: number) {
-  return "$" + new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+  return "$" + new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2, maximumFractionDigits: 2,
+  }).format(n);
 }
 
 function subBadge(status: WorkerStat["sub_status"]) {
   if (status === "confirmed") return <span className="badge badge-green">✅</span>;
   if (status === "pending")   return <span className="badge badge-yellow">⏳</span>;
-  return <span className="badge" style={{ background: "rgba(74,107,74,0.2)", color: "var(--text-muted)" }}>—</span>;
+  return (
+    <span className="badge" style={{ background: "rgba(74,107,74,0.2)", color: "var(--text-muted)" }}>
+      —
+    </span>
+  );
 }
 
 export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
+  const [period,  setPeriod]  = useState("1 oy");
+  const [pdata,   setPdata]   = useState<OwnerPeriodData | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Telegram user ID — always available in WebApp context
+  const userId: number | undefined =
+    typeof window !== "undefined"
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id
+      : undefined;
+
+  useEffect(() => {
+    if (userId) fetchOwner("month");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
+  async function fetchOwner(apiPeriod: string) {
+    if (!userId) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/owner?user_id=${userId}&period=${apiPeriod}`);
+      if (res.ok) setPdata(await res.json() as OwnerPeriodData);
+    } catch {
+      // network error — keep previous data
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handlePeriod(label: string) {
+    if (period === label) return;
+    setPeriod(label);
+    fetchOwner(PERIOD_API[label]);
+  }
+
   const submittedPct = data.total_month > 0
     ? (data.submitted_total / data.total_month) * 100
     : 0;
 
-  const workerNames = data.workers.map((w) => w.name);
+  // Rating + chart: period data yoki fallback (initial workers)
+  const managers: ManagerStat[] = pdata?.managers ?? data.workers.map((w, i) => ({
+    name:       w.name,
+    total:      w.month_total,
+    count:      0,
+    rank:       i + 1,
+    percentage: w.percentage,
+  }));
+  const chartData   = pdata?.chart      ?? data.chart;
+  const grandTotal  = pdata?.grand_total ?? data.total_month;
+  const periodLabel = pdata?.period_label ?? "";
+  const chartNames  = managers.map((m) => m.name);
 
   return (
     <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -61,50 +118,121 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
         </div>
       </div>
 
-      {/* ── Ishchilar reytingi ─────────────────────── */}
+      {/* ── Reyting + period tabs ─────────────────── */}
       <div className="card">
-        <div style={{ fontWeight: 600, fontSize: "0.85rem", marginBottom: 12 }}>
-          🏆 Menejerlar reytingi
+        {/* Header: sarlavha + tabs */}
+        <div style={{
+          display: "flex", justifyContent: "space-between",
+          alignItems: "center", marginBottom: 14,
+        }}>
+          <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>🏆 Menejerlar reytingi</span>
+
+          <div style={{
+            display: "flex", gap: 3,
+            background: "var(--bg-secondary)",
+            borderRadius: 20, padding: "3px 4px",
+          }}>
+            {PERIODS.map((p) => (
+              <button
+                key={p}
+                onClick={() => handlePeriod(p)}
+                style={{
+                  padding: "3px 9px",
+                  borderRadius: 16,
+                  border: "none",
+                  fontSize: "0.72rem",
+                  fontWeight: period === p ? 700 : 400,
+                  background: period === p ? "var(--accent-primary)" : "transparent",
+                  color:      period === p ? "#000"                  : "var(--text-secondary)",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {data.workers.map((w, i) => (
-          <div key={w.id} style={{ marginBottom: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: "1.1rem" }}>{MEDALS[i] ?? `${i + 1}.`}</span>
-                <div>
-                  <span style={{ fontWeight: 600, fontSize: "0.88rem" }}>{w.name}</span>
-                  <span style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginLeft: 6 }}>
-                    {w.role === "accountant" ? "🧮" : ""}
+        {/* Manager kartalar */}
+        {loading ? (
+          <div style={{
+            color: "var(--text-muted)", textAlign: "center",
+            padding: "28px 0", fontSize: "0.85rem",
+          }}>
+            ⌛ Yuklanmoqda...
+          </div>
+        ) : (
+          managers.map((m, i) => (
+            <div key={m.name} style={{ marginBottom: 14 }}>
+              <div style={{
+                display: "flex", justifyContent: "space-between",
+                alignItems: "flex-start", marginBottom: 5,
+              }}>
+                {/* Ism + count */}
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                  <span style={{ fontSize: "1.1rem", lineHeight: 1.2 }}>
+                    {MEDALS[i] ?? `${i + 1}.`}
                   </span>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: "0.88rem" }}>{m.name}</div>
+                    {m.count > 0 && (
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginTop: 1 }}>
+                        {m.count} ta kirim
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Summa + sub badge (faqat initial data uchun) */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{
+                    color: WORKER_COLORS[i] ?? "#00d084",
+                    fontWeight: 700, fontSize: "0.92rem",
+                  }}>
+                    {fmt(m.total)}
+                  </span>
+                  {!pdata && (
+                    subBadge(data.workers[i]?.sub_status ?? "none")
+                  )}
                 </div>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ color: WORKER_COLORS[i] ?? "#00d084", fontWeight: 700, fontSize: "0.92rem" }}>
-                  {fmt(w.month_total)}
-                </span>
-                {subBadge(w.sub_status)}
+
+              {/* Progress bar */}
+              <div className="progress-bar">
+                <div style={{
+                  height: "100%", borderRadius: 2,
+                  background: WORKER_COLORS[i] ?? "#00d084",
+                  width: `${m.percentage}%`,
+                  transition: "width 0.6s ease",
+                }} />
+              </div>
+              <div style={{
+                textAlign: "right", color: "var(--text-muted)",
+                fontSize: "0.7rem", marginTop: 3,
+              }}>
+                {m.percentage.toFixed(1)}%
               </div>
             </div>
-            <div className="progress-bar">
-              <div
-                style={{
-                  height: "100%",
-                  borderRadius: 2,
-                  background: WORKER_COLORS[i] ?? "#00d084",
-                  width: `${w.percentage}%`,
-                  transition: "width 0.6s ease",
-                }}
-              />
-            </div>
-            <div style={{ textAlign: "right", color: "var(--text-muted)", fontSize: "0.7rem", marginTop: 3 }}>
-              {w.percentage.toFixed(1)}%
-            </div>
-          </div>
-        ))}
+          ))
+        )}
+
+        {/* Jami footer */}
+        <div style={{
+          borderTop: "1px solid #1e3a1e",
+          paddingTop: 10, marginTop: 2,
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+        }}>
+          <span style={{ color: "var(--text-muted)", fontSize: "0.78rem" }}>
+            💰 Jami{periodLabel ? ` · ${periodLabel}` : ""}:
+          </span>
+          <span style={{ fontWeight: 700, color: "var(--accent-primary)", fontSize: "0.9rem" }}>
+            {fmt(grandTotal)}
+          </span>
+        </div>
       </div>
 
-      {/* ── Haftalik Stats ─────────────────────────── */}
+      {/* ── Stats grid ────────────────────────────── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         <div className="card" style={{ textAlign: "center" }}>
           <div className="stat-label">Bu hafta</div>
@@ -131,8 +259,13 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
             ⏳ Kutilmoqda
           </div>
           {data.pending_list.map((item) => (
-            <div key={`${item.week_start}-${item.worker_name}`}
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+            <div
+              key={`${item.week_start}-${item.worker_name}`}
+              style={{
+                display: "flex", justifyContent: "space-between",
+                alignItems: "center", marginBottom: 6,
+              }}
+            >
               <div>
                 <span style={{ fontWeight: 600, fontSize: "0.82rem" }}>{item.worker_name}</span>
                 <span style={{ color: "var(--text-muted)", fontSize: "0.75rem", marginLeft: 6 }}>
@@ -156,35 +289,55 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
         </div>
       )}
 
-      {/* ── Stacked Chart ─────────────────────────── */}
+      {/* ── Stacked Chart (period-aware) ──────────── */}
       <div className="card safe-bottom">
         <div style={{ fontWeight: 600, fontSize: "0.85rem", marginBottom: 12 }}>
-          📊 Oylik daromad
+          📊 {period} daromad
         </div>
 
         <ResponsiveContainer width="100%" height={180}>
-          <AreaChart data={data.chart} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+          <AreaChart
+            data={loading ? [] : chartData}
+            margin={{ top: 4, right: 4, left: -20, bottom: 0 }}
+          >
             <defs>
-              {workerNames.map((name, i) => (
-                <linearGradient key={name} id={`g${i}`} x1="0" y1="0" x2="0" y2="1">
+              {chartNames.map((name, i) => (
+                <linearGradient key={name} id={`og${i}`} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%"  stopColor={WORKER_COLORS[i] ?? "#00d084"} stopOpacity={0.3} />
                   <stop offset="95%" stopColor={WORKER_COLORS[i] ?? "#00d084"} stopOpacity={0} />
                 </linearGradient>
               ))}
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#1e3a1e" />
-            <XAxis dataKey="day" tick={{ fill: "#7ab87a", fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: "#7ab87a", fontSize: 10 }} axisLine={false} tickLine={false}
-              tickFormatter={(v: number) => v === 0 ? "" : `$${v}`} />
+            <XAxis
+              dataKey="day"
+              tick={{ fill: "#7ab87a", fontSize: 11 }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <YAxis
+              tick={{ fill: "#7ab87a", fontSize: 10 }}
+              axisLine={false}
+              tickLine={false}
+              tickFormatter={(v: number) => v === 0 ? "" : `$${v}`}
+            />
             <Tooltip
-              contentStyle={{ background: "#132213", border: "1px solid #1e3a1e", borderRadius: 10, fontSize: 12 }}
+              contentStyle={{
+                background: "#132213", border: "1px solid #1e3a1e",
+                borderRadius: 10, fontSize: 12,
+              }}
               labelStyle={{ color: "#e8f5e8", fontWeight: 600 }}
               formatter={(v, name) => [`$${Number(v).toFixed(2)}`, String(name)]}
             />
-            {workerNames.map((name, i) => (
-              <Area key={name} type="monotone" dataKey={name}
-                stroke={WORKER_COLORS[i] ?? "#00d084"} strokeWidth={2}
-                fill={`url(#g${i})`} dot={false}
+            {chartNames.map((name, i) => (
+              <Area
+                key={name}
+                type="monotone"
+                dataKey={name}
+                stroke={WORKER_COLORS[i] ?? "#00d084"}
+                strokeWidth={2}
+                fill={`url(#og${i})`}
+                dot={false}
                 activeDot={{ r: 4, fill: WORKER_COLORS[i] ?? "#00d084" }}
                 stackId="1"
               />

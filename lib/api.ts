@@ -132,3 +132,21 @@ export interface AccountantLockedData {
 
 export const fetchAccountant = (userId: number, period = "week") =>
   apiFetch(`/api/accountant?user_id=${userId}&period=${period}`) as Promise<AccountantData | AccountantLockedData>;
+
+export interface ManagerStat {
+  name: string;
+  total: number;
+  count: number;
+  rank: number;
+  percentage: number;
+}
+
+export interface OwnerPeriodData {
+  managers: ManagerStat[];
+  period_label: string;
+  grand_total: number;
+  chart: ChartPoint[];
+}
+
+export const fetchOwnerPeriod = (userId: number, period = "month") =>
+  apiFetch(`/api/owner?user_id=${userId}&period=${period}`) as Promise<OwnerPeriodData>;
