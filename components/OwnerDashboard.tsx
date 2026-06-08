@@ -81,7 +81,6 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
   const chartData   = pdata?.chart      ?? data.chart;
   const grandTotal  = pdata?.grand_total ?? data.total_month;
   const periodLabel = pdata?.period_label ?? "";
-  const chartNames  = managers.map((m) => m.name);
 
   return (
     <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -279,59 +278,72 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
         </div>
       )}
 
-      {/* ── Stacked Chart (period-aware) ──────────── */}
+      {/* ── Trading Chart (period-aware) ─────────── */}
       <div className="card safe-bottom">
         <div style={{ fontWeight: 600, fontSize: "0.85rem", marginBottom: 12 }}>
           📊 {period} daromad
         </div>
 
-        <ResponsiveContainer width="100%" height={180}>
+        <ResponsiveContainer width="100%" height={200}>
           <AreaChart
             data={loading ? [] : chartData}
             margin={{ top: 4, right: 4, left: -20, bottom: 0 }}
           >
             <defs>
-              {chartNames.map((name, i) => (
-                <linearGradient key={name} id={`og${i}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor={WORKER_COLORS[i] ?? "#00d084"} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={WORKER_COLORS[i] ?? "#00d084"} stopOpacity={0} />
-                </linearGradient>
-              ))}
+              <linearGradient id="ownerGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%"  stopColor="#00c07a" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#00c07a" stopOpacity={0} />
+              </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e3a1e" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" vertical={false} />
             <XAxis
-              dataKey="month"
-              tick={{ fill: "#7ab87a", fontSize: 11 }}
+              dataKey="day"
+              tick={{ fill: "#444", fontSize: 10 }}
               axisLine={false}
               tickLine={false}
+              interval={period === "1 oy" ? 4 : 0}
             />
             <YAxis
-              tick={{ fill: "#7ab87a", fontSize: 10 }}
+              tick={{ fill: "#444", fontSize: 10 }}
               axisLine={false}
               tickLine={false}
               tickFormatter={(v: number) => v === 0 ? "" : `$${v}`}
             />
             <Tooltip
-              contentStyle={{
-                background: "#132213", border: "1px solid #1e3a1e",
-                borderRadius: 10, fontSize: 12,
+              content={({ active, payload, label }) => {
+                if (!active || !payload?.length) return null;
+                const detail = (payload[0]?.payload?.detail || {}) as Record<string, number>;
+                return (
+                  <div style={{
+                    background: "#111", border: "1px solid #222",
+                    borderRadius: 8, padding: "8px 10px", fontSize: 11,
+                  }}>
+                    <div style={{ color: "#888", marginBottom: 4 }}>
+                      {period === "1 oy" ? `${label}-kun` : label}
+                    </div>
+                    <div style={{ color: "#00c07a", fontWeight: 700, marginBottom: 6 }}>
+                      Jami: ${Number(payload[0].value).toFixed(2)}
+                    </div>
+                    {Object.entries(detail).map(([name, val]) =>
+                      Number(val) > 0 && (
+                        <div key={name} style={{ color: "#666" }}>
+                          {name.split(" ")[0]}: ${Number(val).toFixed(0)}
+                        </div>
+                      )
+                    )}
+                  </div>
+                );
               }}
-              labelStyle={{ color: "#e8f5e8", fontWeight: 600 }}
-              formatter={(v, name) => [`$${Number(v).toFixed(2)}`, String(name)]}
             />
-            {chartNames.map((name, i) => (
-              <Area
-                key={name}
-                type="monotone"
-                dataKey={name}
-                stroke={WORKER_COLORS[i] ?? "#00d084"}
-                strokeWidth={2}
-                fill={`url(#og${i})`}
-                dot={false}
-                activeDot={{ r: 4, fill: WORKER_COLORS[i] ?? "#00d084" }}
-                stackId="1"
-              />
-            ))}
+            <Area
+              type="monotone"
+              dataKey="total"
+              stroke="#00c07a"
+              strokeWidth={2}
+              fill="url(#ownerGrad)"
+              dot={false}
+              activeDot={{ r: 4, fill: "#00c07a", stroke: "#000", strokeWidth: 2 }}
+            />
           </AreaChart>
         </ResponsiveContainer>
       </div>
