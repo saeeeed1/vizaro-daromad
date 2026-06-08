@@ -127,11 +127,11 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
         {/* Period Tabs */}
         <div style={{
           display: "flex",
-          gap: 6,
-          marginBottom: 12,
+          gap: 4,
+          marginBottom: 10,
           background: "#111",
-          borderRadius: 12,
-          padding: 4,
+          borderRadius: 10,
+          padding: 3,
         }}>
           {PERIODS.map((p) => (
             <button
@@ -139,15 +139,14 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
               onClick={() => handlePeriod(p)}
               style={{
                 flex: 1,
-                padding: "8px 4px",
-                borderRadius: 8,
+                padding: "6px 0",
+                borderRadius: 7,
                 border: "none",
-                fontSize: "0.78rem",
+                fontSize: "0.72rem",
                 fontWeight: period === p ? 700 : 400,
                 background: period === p ? "#00c07a" : "transparent",
-                color: period === p ? "#000" : "#666",
+                color: period === p ? "#000" : "#555",
                 cursor: "pointer",
-                transition: "all 0.2s",
               }}
             >
               {p}
