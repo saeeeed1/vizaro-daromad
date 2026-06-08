@@ -279,7 +279,7 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#1e3a1e" />
             <XAxis
-              dataKey="day"
+              dataKey="month"
               tick={{ fill: "#7ab87a", fontSize: 11 }}
               axisLine={false}
               tickLine={false}
