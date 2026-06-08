@@ -20,8 +20,8 @@ function subBadge(status: WorkerStat["sub_status"]) {
 }
 
 export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
-  const submittedPct = data.total_week > 0
-    ? (data.submitted_total / data.total_week) * 100
+  const submittedPct = data.total_month > 0
+    ? (data.submitted_total / data.total_month) * 100
     : 0;
 
   const workerNames = data.workers.map((w) => w.name);
@@ -36,12 +36,12 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
             👁 OWNER PANEL
           </div>
           <div style={{ color: "var(--text-secondary)", fontSize: "0.78rem", marginTop: 2 }}>
-            Bu hafta umumiy daromad
+            Bu oy umumiy daromad
           </div>
         </div>
 
         <div className="stat-value" style={{ fontSize: "2rem", marginBottom: 14 }}>
-          {fmt(data.total_week)}
+          {fmt(data.total_month)}
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
@@ -81,7 +81,7 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ color: WORKER_COLORS[i] ?? "#00d084", fontWeight: 700, fontSize: "0.92rem" }}>
-                  {fmt(w.week_total)}
+                  {fmt(w.month_total)}
                 </span>
                 {subBadge(w.sub_status)}
               </div>
@@ -121,7 +121,7 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
       {/* ── Stacked Chart ─────────────────────────── */}
       <div className="card safe-bottom">
         <div style={{ fontWeight: 600, fontSize: "0.85rem", marginBottom: 12 }}>
-          📊 Haftalik daromad
+          📊 Oylik daromad
         </div>
 
         <ResponsiveContainer width="100%" height={180}>

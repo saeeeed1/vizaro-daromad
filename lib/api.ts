@@ -27,7 +27,7 @@ export interface WorkerStat {
   id: number;
   name: string;
   role: string;
-  week_total: number;
+  month_total: number;
   sub_status: "pending" | "confirmed" | "none";
   percentage: number;
 }
