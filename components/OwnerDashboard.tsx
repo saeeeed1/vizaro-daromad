@@ -161,30 +161,51 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
           </div>
         ) : (managers || []).map((m, i) => (
           <div key={m.name} style={{
-            background: "#1a1a1a",
-            borderRadius: 12,
-            padding: "12px",
-            marginBottom: 8,
-            borderLeft: `3px solid ${WORKER_COLORS[i % WORKER_COLORS.length]}`,
+            display: "flex",
+            flexDirection: "column",
+            gap: 6,
+            padding: "10px 12px",
+            marginBottom: 6,
+            background: "#161616",
+            borderRadius: 10,
+            border: "1px solid #222",
           }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <span style={{ marginRight: 6 }}>{MEDALS[i] || ""}</span>
-                <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>{m.name}</span>
+            {/* Yuqori qator: medal + ism + summa */}
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: "1rem" }}>{MEDALS[i] || `${i + 1}.`}</span>
+                <span style={{
+                  fontSize: "0.85rem",
+                  fontWeight: 600,
+                  color: "#e0e0e0",
+                }}>{m.name}</span>
+                <span style={{
+                  fontSize: "0.7rem",
+                  color: "#555",
+                }}>{m.count} ta</span>
               </div>
-              <span style={{ color: "#00c07a", fontWeight: 700 }}>${m.total.toFixed(2)}</span>
-            </div>
-            <div style={{ color: "#666", fontSize: "0.75rem", marginTop: 4 }}>
-              {m.count} ta kirim
+              <span style={{
+                fontSize: "0.9rem",
+                fontWeight: 700,
+                color: "#00c07a",
+              }}>${m.total.toFixed(0)}</span>
             </div>
             {/* Progress bar */}
-            <div style={{ background: "#222", borderRadius: 4, height: 4, marginTop: 8 }}>
+            <div style={{
+              background: "#222",
+              borderRadius: 3,
+              height: 3,
+            }}>
               <div style={{
                 background: WORKER_COLORS[i % WORKER_COLORS.length],
-                borderRadius: 4,
-                height: 4,
+                borderRadius: 3,
+                height: 3,
                 width: `${m.percentage || 0}%`,
-                transition: "width 0.5s",
+                transition: "width 0.4s",
               }} />
             </div>
           </div>
