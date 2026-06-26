@@ -1,162 +1,184 @@
 "use client";
 
-import type { AccountantData, WorkerSubmission, PendingListItem } from "@/lib/api";
+import { useEffect, useState } from "react";
+
+import { fetchAccountant } from "@/lib/api";
+import type { AccountantData, AccountantManager } from "@/lib/api";
+
+const GREEN = "#22c55e";
+const YELLOW = "#f59e0b";
 
 function fmtUSD(n: number) {
   return "$" + new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 }
 
-function fmtDate(dt: string) {
-  if (!dt) return "";
-  const UZ_M = ["yan","fev","mar","apr","may","iyun","iyul","avg","sen","okt","noy","dek"];
-  try {
-    const [datePart, timePart] = dt.split(" ");
-    const [, m, d] = datePart.split("-").map(Number);
-    return `${d}-${UZ_M[m - 1]} ${(timePart ?? "").slice(0, 5)}`.trim();
-  } catch {
-    return dt.slice(5, 16);
-  }
-}
-
-function WorkerCard({ sub }: { sub: WorkerSubmission }) {
-  const isOk = sub.status === "confirmed";
-  const isNo = sub.status === "not_submitted";
-
-  const color = isOk ? "#22c55e" : isNo ? "#ef4444" : "#f59e0b";
-  const icon  = isOk ? "✅" : isNo ? "❌" : "⏳";
-
-  const line2 = isOk
-    ? `${fmtUSD(sub.total_usd)} · ${sub.count} ta kirim`
-    : isNo
-    ? "Hali topshirmadi"
-    : `${fmtUSD(sub.total_usd)} · ${sub.count} ta kirim`;
-
-  const line3 = isOk
-    ? (sub.confirmed_at ? `Topshirildi: ${fmtDate(sub.confirmed_at)}` : "")
-    : isNo
-    ? (sub.total_usd > 0 ? `Bu hafta: ${fmtUSD(sub.total_usd)} (kutilmoqda)` : "Bu hafta kirim yo'q")
-    : "Tasdiqlash kutilmoqda";
-
+// ── Davr tablari: Bu hafta / Bu oy ─────────────────────────────────────────────
+function PeriodTabs({
+  period,
+  onChange,
+}: {
+  period: "week" | "month";
+  onChange: (p: "week" | "month") => void;
+}) {
+  const tabs: { key: "week" | "month"; label: string }[] = [
+    { key: "week", label: "Bu hafta" },
+    { key: "month", label: "Bu oy" },
+  ];
   return (
-    <div style={{
-      border: `1px solid ${color}33`,
-      borderLeft: `3px solid ${color}`,
-      borderRadius: 10,
-      padding: "10px 12px",
-      marginBottom: 10,
-      background: `${color}0d`,
-    }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
-        <span>{icon}</span>
-        <span style={{ fontWeight: 700, fontSize: "0.9rem", color }}>{sub.worker_name}</span>
-      </div>
-      <div style={{ color: "var(--text-secondary)", fontSize: "0.8rem", marginLeft: 22 }}>{line2}</div>
-      {line3 && (
-        <div style={{ color: "var(--text-muted)", fontSize: "0.75rem", marginLeft: 22, marginTop: 2 }}>{line3}</div>
-      )}
+    <div style={{ display: "flex", gap: 8 }}>
+      {tabs.map(({ key, label }) => {
+        const active = period === key;
+        return (
+          <button
+            key={key}
+            onClick={() => onChange(key)}
+            style={{
+              flex: 1,
+              padding: "10px 0",
+              background: active ? "#00c07a" : "#1a1a1a",
+              color: active ? "#000" : "#888",
+              border: "none",
+              borderRadius: 10,
+              cursor: "pointer",
+              fontWeight: active ? 700 : 500,
+              fontSize: "0.85rem",
+              transition: "background 0.15s, color 0.15s",
+            }}
+          >
+            {label}
+          </button>
+        );
+      })}
     </div>
   );
 }
 
+// ── Bitta menejer kartasi ──────────────────────────────────────────────────────
+function ManagerCard({ m }: { m: AccountantManager }) {
+  const hasPending = m.pending > 0.005;
+  const border = hasPending ? YELLOW : "var(--border)";
+
+  return (
+    <div
+      style={{
+        border: `1px solid ${hasPending ? YELLOW + "44" : "var(--border)"}`,
+        borderLeft: `3px solid ${border}`,
+        borderRadius: 10,
+        padding: "10px 12px",
+        marginBottom: 10,
+        background: hasPending ? YELLOW + "0d" : "transparent",
+      }}
+    >
+      {/* Ism + topshirdi belgisi */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <span style={{ fontWeight: 700, fontSize: "0.9rem" }}>{m.name}</span>
+        {m.is_submitted && (
+          <span style={{ color: GREEN, fontSize: "0.72rem", fontWeight: 700 }}>✓ topshirdi</span>
+        )}
+      </div>
+
+      {/* Summalar */}
+      <div style={{ display: "flex", gap: 16, fontSize: "0.85rem" }}>
+        <span style={{ color: GREEN, fontWeight: 600 }}>✅ {fmtUSD(m.submitted)}</span>
+        {hasPending && (
+          <span style={{ color: YELLOW, fontWeight: 600 }}>⏳ {fmtUSD(m.pending)}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Umumiy karta ───────────────────────────────────────────────────────────────
+function SummaryCard({ data }: { data: AccountantData }) {
+  const { submitted, pending, total } = data.summary;
+  return (
+    <div className="card">
+      <div style={{ fontWeight: 600, fontSize: "0.85rem", marginBottom: 10 }}>📊 Umumiy holat</div>
+      <div style={{ height: 1, background: "var(--border)", margin: "0 0 10px" }} />
+
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+        <span style={{ color: "var(--text-secondary)", fontSize: "0.84rem" }}>✅ Topshirilgan:</span>
+        <span style={{ fontWeight: 700, fontSize: "0.9rem", color: GREEN }}>{fmtUSD(submitted)}</span>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <span style={{ color: "var(--text-secondary)", fontSize: "0.84rem" }}>⏳ Kutilayotgan:</span>
+        <span style={{ fontWeight: 700, fontSize: "0.9rem", color: YELLOW }}>{fmtUSD(pending)}</span>
+      </div>
+
+      <div style={{ height: 1, background: "var(--border)", margin: "10px 0" }} />
+
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <span style={{ color: "var(--text-secondary)", fontSize: "0.86rem" }}>💰 Jami:</span>
+        <span style={{ fontWeight: 800, fontSize: "0.95rem", color: "var(--accent-primary)" }}>{fmtUSD(total)}</span>
+      </div>
+    </div>
+  );
+}
+
+// ── Asosiy komponent (o'zi fetch qiladi) ────────────────────────────────────────
 export default function AccountantDashboard({
-  data,
+  userId,
   name,
 }: {
-  data: AccountantData;
+  userId: number;
   name: string;
 }) {
-  const allWorkers     = [...data.received, ...data.pending];
-  const confirmedTotal = data.received.reduce((s, w) => s + w.total_usd, 0);
-  const pendingTotal   = data.pending.reduce((s, w) => s + w.total_usd, 0);
-  const grandTotal     = confirmedTotal + pendingTotal;
+  const [period, setPeriod] = useState<"week" | "month">("week");
+  const [data, setData] = useState<AccountantData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    setError(false);
+    fetchAccountant(userId, period)
+      .then((d) => { if (alive) setData(d); })
+      .catch(() => { if (alive) setError(true); })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, [userId, period]);
 
   return (
     <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 12 }}>
-
       {/* Hero */}
       <div className="card" style={{ background: "linear-gradient(135deg, #0f1a0f, #1a2e1a)" }}>
         <div style={{ color: "var(--accent-primary)", fontWeight: 700, fontSize: "0.85rem", letterSpacing: "0.08em" }}>
           🧮 BUGALTER PANEL
         </div>
         <div style={{ color: "var(--text-secondary)", fontSize: "0.78rem", marginTop: 3 }}>
-          {name} · {data.week_label}
+          {name}{data ? ` · ${data.period_label}` : ""}
         </div>
       </div>
 
-      {/* Worker kartalar */}
-      <div className="card">
-        <div style={{ fontWeight: 600, fontSize: "0.85rem", marginBottom: 12 }}>
-          📋 Menejerlar holati
-        </div>
-        {allWorkers.length === 0 ? (
-          <div style={{ color: "var(--text-muted)", textAlign: "center", padding: "24px 0" }}>
-            Hali ma&apos;lumot yo&apos;q
-          </div>
-        ) : (
-          allWorkers.map((sub) => <WorkerCard key={sub.worker_id} sub={sub} />)
-        )}
-      </div>
+      {/* Davr tablari */}
+      <PeriodTabs period={period} onChange={setPeriod} />
 
-      {/* Eski pending (oldingi haftalar) */}
-      {data.old_pending && data.old_pending.length > 0 && (
-        <div style={{
-          border: "1px solid #f59e0b33",
-          borderLeft: "3px solid #f59e0b",
-          borderRadius: 12,
-          padding: "12px 14px",
-          background: "#f59e0b0d",
-        }}>
-          <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#f59e0b", marginBottom: 10 }}>
-            ⏳ Kutilmoqda (eski)
-          </div>
-          {data.old_pending.map((item: PendingListItem) => (
-            <div key={`${item.week_start}-${item.worker_name}`}
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <div>
-                <span style={{ fontWeight: 600, fontSize: "0.82rem" }}>{item.worker_name}</span>
-                <span style={{ color: "var(--text-muted)", fontSize: "0.75rem", marginLeft: 6 }}>
-                  · {item.week}
-                </span>
+      {loading ? (
+        <div className="card" style={{ textAlign: "center", padding: "30px 0", color: "var(--text-muted)" }}>
+          Yuklanmoqda…
+        </div>
+      ) : error ? (
+        <div className="card" style={{ textAlign: "center", padding: "24px 0", color: "var(--danger)" }}>
+          ⚠️ Ma&apos;lumot yuklanmadi
+        </div>
+      ) : data ? (
+        <>
+          <SummaryCard data={data} />
+
+          {/* Menejerlar */}
+          <div className="card safe-bottom">
+            <div style={{ fontWeight: 600, fontSize: "0.85rem", marginBottom: 12 }}>👥 Menejerlar</div>
+            {data.managers.length === 0 ? (
+              <div style={{ color: "var(--text-muted)", textAlign: "center", padding: "24px 0" }}>
+                Hali ma&apos;lumot yo&apos;q
               </div>
-              <span style={{ fontWeight: 600, color: "#f59e0b", fontSize: "0.82rem" }}>
-                ${item.total.toFixed(2)}
-              </span>
-            </div>
-          ))}
-          <div style={{
-            borderTop: "1px solid #f59e0b33", paddingTop: 8, marginTop: 4,
-            display: "flex", justifyContent: "space-between",
-          }}>
-            <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>Jami:</span>
-            <span style={{ fontWeight: 700, color: "#f59e0b", fontSize: "0.88rem" }}>
-              ${(data.old_pending_total ?? 0).toFixed(2)}
-            </span>
+            ) : (
+              data.managers.map((m) => <ManagerCard key={m.worker_id} m={m} />)
+            )}
           </div>
-        </div>
-      )}
-
-      {/* Jami */}
-      <div className="card safe-bottom">
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-          <span style={{ color: "var(--text-secondary)", fontSize: "0.82rem" }}>💰 Jami olish kerak:</span>
-          <span style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--accent-primary)" }}>
-            {fmtUSD(grandTotal)}
-          </span>
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-          <span style={{ color: "var(--text-secondary)", fontSize: "0.82rem" }}>✅ Tasdiqlangan:</span>
-          <span style={{ fontWeight: 700, fontSize: "0.88rem", color: "#22c55e" }}>
-            {fmtUSD(confirmedTotal)}
-          </span>
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <span style={{ color: "var(--text-secondary)", fontSize: "0.82rem" }}>❌ Kutilmoqda:</span>
-          <span style={{ fontWeight: 700, fontSize: "0.88rem", color: "#ef4444" }}>
-            {fmtUSD(pendingTotal)}
-          </span>
-        </div>
-      </div>
-
+        </>
+      ) : null}
     </div>
   );
 }

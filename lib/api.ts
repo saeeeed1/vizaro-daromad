@@ -74,40 +74,23 @@ export interface OwnerDashboardData {
 
 export type DashboardData = WorkerDashboardData | OwnerDashboardData;
 
-export interface WorkerSubmission {
+export interface AccountantManager {
   worker_id: number;
-  worker_name: string;
-  total_usd: number;
-  total_uzs: number;
-  count: number;
-  confirmed_at: string;
-  status: "confirmed" | "pending" | "not_submitted";
+  name: string;
+  submitted: number;   // tasdiqlangan (confirmed) USD
+  pending: number;     // hali tasdiqlanmagan USD
+  is_submitted: boolean; // bu hafta topshirdimi
 }
 
 export interface AccountantData {
-  period: string;
-  week_label: string;
-  received: WorkerSubmission[];
-  pending: WorkerSubmission[];
+  period: "week" | "month";
+  period_label: string;
   summary: {
-    total_usd: number;
-    total_uzs: number;
-    confirmed_count: number;
-    pending_count: number;
+    submitted: number;
+    pending: number;
+    total: number;
   };
-  month_summary: {
-    total_usd: number;
-    total_uzs: number;
-    confirmed_count: number;
-  };
-  own_income: {
-    total_usd: number;
-    total_uzs: number;
-    count: number;
-    month_total: number;
-  };
-  old_pending?: PendingListItem[];
-  old_pending_total?: number;
+  managers: AccountantManager[];
 }
 
 async function apiFetch(path: string): Promise<unknown> {
@@ -125,13 +108,8 @@ export const fetchDashboard = (userId: number, period = "week") =>
 export const fetchHistory = (userId: number, limit = 30) =>
   apiFetch(`/api/history?user_id=${userId}&limit=${limit}`) as Promise<{ incomes: IncomeItem[]; total: number }>;
 
-export interface AccountantLockedData {
-  show: false;
-  next_saturday: string;
-}
-
 export const fetchAccountant = (userId: number, period = "week") =>
-  apiFetch(`/api/accountant?user_id=${userId}&period=${period}`) as Promise<AccountantData | AccountantLockedData>;
+  apiFetch(`/api/accountant?user_id=${userId}&period=${period}`) as Promise<AccountantData>;
 
 export interface ManagerStat {
   name: string;

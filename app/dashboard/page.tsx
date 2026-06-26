@@ -5,10 +5,10 @@ import { DashboardSkeleton } from "@/components/Skeleton";
 import WorkerDashboard from "@/components/WorkerDashboard";
 import OwnerDashboard from "@/components/OwnerDashboard";
 import AccountantDashboard from "@/components/AccountantDashboard";
-import { fetchMe, fetchDashboard, fetchAccountant } from "@/lib/api";
+import { fetchMe, fetchDashboard } from "@/lib/api";
 import type {
   UserInfo, DashboardData,
-  WorkerDashboardData, OwnerDashboardData, AccountantData, AccountantLockedData,
+  WorkerDashboardData, OwnerDashboardData,
 } from "@/lib/api";
 
 declare global {
@@ -98,7 +98,6 @@ export default function DashboardPage() {
   const [user,       setUser]       = useState<UserInfo | null>(null);
   const [data,       setData]       = useState<DashboardData | null>(null);
   const [workerData, setWorkerData] = useState<WorkerDashboardData | null>(null);
-  const [accData,    setAccData]    = useState<AccountantData | AccountantLockedData | null>(null);
   const [activeTab,  setActiveTab]  = useState<"manager" | "accountant">("manager");
   const [error,      setError]      = useState<string | null>(null);
   const [loading,    setLoading]    = useState(true);
@@ -123,12 +122,8 @@ export default function DashboardPage() {
         setUser(u);
 
         if (u.role === "accountant") {
-          const [wd, ad] = await Promise.all([
-            fetchDashboard(uid, "week"),
-            fetchAccountant(uid, "week"),
-          ]);
+          const wd = await fetchDashboard(uid, "week");
           setWorkerData(wd as WorkerDashboardData);
-          setAccData(ad);
         } else {
           const d = await fetchDashboard(uid, "week");
           setData(d);
@@ -159,51 +154,13 @@ export default function DashboardPage() {
   }
 
   if (user.role === "accountant") {
-    const UZ_M = ["yan","fev","mar","apr","may","iyun","iyul","avg","sen","okt","noy","dek"];
-
-    const accContent = () => {
-      if (!accData) return null;
-      if ("show" in accData && !accData.show) {
-        const { next_saturday } = accData as AccountantLockedData;
-        const [, mo, dy] = next_saturday.split("-").map(Number);
-        const nextSatStr = `${dy}-${UZ_M[mo - 1]}`;
-        return (
-          <div style={{ padding: 24, paddingTop: 60 }}>
-            <div className="card" style={{ textAlign: "center", padding: "36px 16px" }}>
-              <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🔒</div>
-              <div style={{ fontWeight: 700, fontSize: "1rem", marginBottom: 6 }}>
-                Haftalik hisobot
-              </div>
-              <div style={{ color: "var(--text-secondary)", fontSize: "0.85rem", marginBottom: 20 }}>
-                Faqat shanba kuni ko&apos;rinadi
-              </div>
-              <div style={{ borderTop: "1px solid var(--border)", paddingTop: 16 }}>
-                <div style={{ color: "var(--text-muted)", fontSize: "0.78rem", marginBottom: 6 }}>
-                  ⏳ Keyingi shanba:
-                </div>
-                <div style={{ color: "var(--accent-primary)", fontWeight: 700, fontSize: "1.15rem" }}>
-                  {nextSatStr}
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      }
-      return (
-        <AccountantDashboard
-          data={accData as AccountantData}
-          name={user.name || user.username}
-        />
-      );
-    };
-
     return (
       <>
         <div style={{ paddingBottom: `calc(90px + max(env(safe-area-inset-bottom), 20px))` }}>
           {activeTab === "manager" && workerData ? (
             <WorkerDashboard data={workerData} name={user.name || user.username} hideSubmission={true} userId={user.user_id} />
           ) : activeTab === "accountant" ? (
-            accContent()
+            <AccountantDashboard userId={user.user_id} name={user.name || user.username} />
           ) : null}
         </div>
         <BottomTabs active={activeTab} onChange={setActiveTab} />
