@@ -79,7 +79,7 @@ export interface AccountantManager {
   name: string;
   submitted: number;   // tasdiqlangan (confirmed) USD
   pending: number;     // hali tasdiqlanmagan USD
-  is_submitted: boolean; // bu hafta topshirdimi
+  submit_status: "full" | "partial" | "none"; // topshirish holati
 }
 
 export interface AccountantData {

@@ -56,24 +56,46 @@ function PeriodTabs({
 // ── Bitta menejer kartasi ──────────────────────────────────────────────────────
 function ManagerCard({ m }: { m: AccountantManager }) {
   const hasPending = m.pending > 0.005;
-  const border = hasPending ? YELLOW : "var(--border)";
+
+  // Topshirish holatiga qarab belgi, border va fon
+  const badge =
+    m.submit_status === "full"
+      ? { text: "✓ topshirdi", color: GREEN }
+      : m.submit_status === "partial"
+      ? { text: "◐ qisman", color: YELLOW }
+      : null;
+
+  const accent =
+    m.submit_status === "full" ? GREEN :
+    m.submit_status === "partial" ? YELLOW :
+    "var(--border)";
+
+  const ringColor =
+    m.submit_status === "full" ? GREEN + "33" :
+    m.submit_status === "partial" ? YELLOW + "44" :
+    "var(--border)";
+
+  const bg =
+    m.submit_status === "partial" ? YELLOW + "0d" :
+    m.submit_status === "full" ? GREEN + "08" :
+    "transparent";
 
   return (
     <div
       style={{
-        border: `1px solid ${hasPending ? YELLOW + "44" : "var(--border)"}`,
-        borderLeft: `3px solid ${border}`,
+        border: `1px solid ${ringColor}`,
+        borderLeft: `3px solid ${accent}`,
         borderRadius: 10,
         padding: "10px 12px",
         marginBottom: 10,
-        background: hasPending ? YELLOW + "0d" : "transparent",
+        background: bg,
       }}
     >
-      {/* Ism + topshirdi belgisi */}
+      {/* Ism + topshirish belgisi */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
         <span style={{ fontWeight: 700, fontSize: "0.9rem" }}>{m.name}</span>
-        {m.is_submitted && (
-          <span style={{ color: GREEN, fontSize: "0.72rem", fontWeight: 700 }}>✓ topshirdi</span>
+        {badge && (
+          <span style={{ color: badge.color, fontSize: "0.72rem", fontWeight: 700 }}>{badge.text}</span>
         )}
       </div>
 
