@@ -21,8 +21,8 @@ function fmt(n: number) {
 }
 
 function subBadge(status: WorkerStat["sub_status"]) {
-  if (status === "confirmed") return <span className="badge badge-green">✅</span>;
-  if (status === "pending")   return <span className="badge badge-yellow">⏳</span>;
+  if (status === "full")    return <span className="badge badge-green">✅</span>;
+  if (status === "partial") return <span className="badge badge-yellow">◐</span>;
   return (
     <span className="badge" style={{ background: "rgba(74,107,74,0.2)", color: "var(--text-muted)" }}>
       —

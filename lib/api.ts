@@ -42,7 +42,7 @@ export interface WorkerStat {
   name: string;
   role: string;
   month_total: number;
-  sub_status: "pending" | "confirmed" | "none";
+  sub_status: "full" | "partial" | "none";
   percentage: number;
 }
 
