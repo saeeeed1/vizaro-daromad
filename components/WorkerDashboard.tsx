@@ -6,6 +6,7 @@ import {
   Tooltip, ResponsiveContainer,
 } from "recharts";
 import type { WorkerDashboardData, IncomeItem } from "@/lib/api";
+import CategoryCard from "@/components/CategoryCard";
 
 const PERIODS = ["1 oy", "3 oy", "6 oy", "1 yil"] as const;
 const PERIOD_MAP: Record<string, string> = {
@@ -222,6 +223,9 @@ export default function WorkerDashboard({
           </AreaChart>
         </ResponsiveContainer>
       </div>
+
+      {/* ── Kategoriya bo'yicha ───────────────────── */}
+      <CategoryCard categories={data.categories} />
 
       {/* ── Oxirgi kirimlar ───────────────────────── */}
       <div className="card safe-bottom">

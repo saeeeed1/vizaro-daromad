@@ -46,6 +46,15 @@ export interface WorkerStat {
   percentage: number;
 }
 
+export interface Category {
+  name: string;   // "Aviabilet" | "Mehmonxona" | "Viza" | "Tur" | "Boshqa"
+  total: number;
+  count: number;
+}
+
+// Fallback — API categories qaytarmasa yoki bo'sh bo'lsa
+export const CATEGORY_FALLBACK: Category[] = [];
+
 export interface WorkerDashboardData {
   role: "manager" | "accountant";
   week_total: number;
@@ -58,6 +67,7 @@ export interface WorkerDashboardData {
   recent: IncomeItem[];
   pending_submissions?: PendingSubmission[];
   pending_total_all?: number;
+  categories?: Category[];
 }
 
 export interface OwnerDashboardData {
@@ -70,6 +80,7 @@ export interface OwnerDashboardData {
   chart: ChartPoint[];
   pending_list?: PendingListItem[];
   pending_list_total?: number;
+  categories?: Category[];
 }
 
 export type DashboardData = WorkerDashboardData | OwnerDashboardData;

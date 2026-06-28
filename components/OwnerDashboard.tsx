@@ -6,6 +6,7 @@ import {
   Tooltip, ResponsiveContainer,
 } from "recharts";
 import type { OwnerDashboardData, WorkerStat, OwnerPeriodData, ManagerStat } from "@/lib/api";
+import CategoryCard from "@/components/CategoryCard";
 
 const WORKER_COLORS = ["#00d084", "#00ff9d", "#ffd700", "#ffa502", "#ff6b9d"];
 const MEDALS        = ["🥇", "🥈", "🥉"];
@@ -277,6 +278,9 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
           </div>
         </div>
       )}
+
+      {/* ── Kategoriya bo'yicha (hamma menejer) ───── */}
+      <CategoryCard categories={data.categories} />
 
       {/* ── Trading Chart (period-aware) ─────────── */}
       <div className="card safe-bottom">
