@@ -15,6 +15,16 @@ const PERIOD_API: Record<string, string> = {
   "1 oy": "month", "3 oy": "3month", "6 oy": "6month", "1 yil": "year",
 };
 
+const UZ_MONTHS_CAP = [
+  "Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun",
+  "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr",
+];
+function monthLabel(ym: string): string {
+  const [y, m] = ym.split("-");
+  const idx = parseInt(m, 10) - 1;
+  return `${UZ_MONTHS_CAP[idx] ?? m} ${y}`;
+}
+
 function fmt(n: number) {
   return "$" + new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2, maximumFractionDigits: 2,
@@ -35,6 +45,8 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
   const [period,  setPeriod]  = useState("1 oy");
   const [pdata,   setPdata]   = useState<OwnerPeriodData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [months,  setMonths]  = useState<string[]>([]);
+  const [selMonth, setSelMonth] = useState("");
 
   // Telegram user ID — always available in WebApp context
   const userId: number | undefined =
@@ -47,6 +59,30 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
     if (userId) fetchOwner("month");
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
+
+  // Mavjud oylar (Excel yuklash dropdown'i uchun)
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`/api/owner/months?user_id=${userId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const ms: string[] = d?.months ?? [];
+        setMonths(ms);
+        if (ms.length) setSelMonth(ms[0]);
+      })
+      .catch(() => { /* network — bo'sh qoladi */ });
+  }, [userId]);
+
+  function downloadExcel() {
+    if (!userId || !selMonth) return;
+    // Same-origin Next proxy → Content-Disposition: attachment (mixed-content yo'q)
+    const a = document.createElement("a");
+    a.href = `/api/owner/excel?user_id=${userId}&month=${selMonth}`;
+    a.download = `owner_${selMonth}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
 
   async function fetchOwner(apiPeriod: string) {
     if (!userId) return;
@@ -117,6 +153,56 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
           </span>
         </div>
       </div>
+
+      {/* ── Excel hisobot yuklash (istalgan oy) ───── */}
+      {months.length > 0 && (
+        <div className="card">
+          <div style={{ fontWeight: 600, fontSize: "0.85rem", marginBottom: 12 }}>
+            📥 Excel hisobot yuklash
+          </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <select
+              value={selMonth}
+              onChange={(e) => setSelMonth(e.target.value)}
+              style={{
+                flex: 1,
+                background: "var(--bg-secondary)",
+                color: "var(--text-primary)",
+                border: "1px solid var(--border)",
+                borderRadius: 10,
+                padding: "10px 12px",
+                fontSize: "0.85rem",
+                appearance: "none",
+                WebkitAppearance: "none",
+                cursor: "pointer",
+              }}
+            >
+              {months.map((ym) => (
+                <option key={ym} value={ym} style={{ background: "#1a1a1a", color: "#fff" }}>
+                  {monthLabel(ym)}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={downloadExcel}
+              disabled={!selMonth}
+              style={{
+                background: "var(--accent-primary)",
+                color: "#000",
+                border: "none",
+                borderRadius: 10,
+                padding: "10px 16px",
+                fontSize: "0.85rem",
+                fontWeight: 700,
+                cursor: selMonth ? "pointer" : "default",
+                whiteSpace: "nowrap",
+              }}
+            >
+              📥 Yuklab olish
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Reyting + period tabs ─────────────────── */}
       <div className="card">

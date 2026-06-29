@@ -139,3 +139,10 @@ export interface OwnerPeriodData {
 
 export const fetchOwnerPeriod = (userId: number, period = "month") =>
   apiFetch(`/api/owner?user_id=${userId}&period=${period}`) as Promise<OwnerPeriodData>;
+
+export interface OwnerMonths {
+  months: string[];   // ["2026-06", "2026-05", ...]
+}
+
+export const fetchOwnerMonths = (userId: number) =>
+  apiFetch(`/api/owner/months?user_id=${userId}`) as Promise<OwnerMonths>;
