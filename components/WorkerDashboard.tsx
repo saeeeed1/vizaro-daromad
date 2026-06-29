@@ -53,6 +53,7 @@ export default function WorkerDashboard({
   const [period, setPeriod]             = useState("1 oy");
   const [chartData, setChartData]       = useState(data.chart);
   const [chartLoading, setChartLoading] = useState(false);
+  const [showAll, setShowAll]           = useState(false);
 
   useEffect(() => {
     setPeriod("1 oy");
@@ -304,32 +305,50 @@ export default function WorkerDashboard({
       {/* ── Kategoriya bo'yicha ───────────────────── */}
       <CategoryCard categories={data.categories} />
 
-      {/* ── Oxirgi kirimlar ───────────────────────── */}
+      {/* ── Bu oy kirimlar (5 ta / hammasi) ────────── */}
       <div className="card safe-bottom">
         <div style={{ fontWeight: 600, fontSize: "0.85rem", marginBottom: 10 }}>
-          🕐 Oxirgi kirimlar
+          🕐 Bu oy kirimlar
         </div>
         {data.recent.length === 0 ? (
           <div style={{ color: "var(--text-muted)", textAlign: "center", padding: "20px 0" }}>
             Hali kirim yo&apos;q
           </div>
         ) : (
-          data.recent.map((inc: IncomeItem) => (
-            <div key={inc.id} className="income-row">
-              <div>
-                <div style={{ fontWeight: 600, fontSize: "0.88rem" }}>{inc.description}</div>
-                <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginTop: 2 }}>
-                  {relDate(inc.date)}
+          <>
+            {(showAll ? data.recent : data.recent.slice(0, 5)).map((inc: IncomeItem) => (
+              <div key={inc.id} className="income-row">
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: "0.88rem" }}>{inc.description}</div>
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginTop: 2 }}>
+                    {relDate(inc.date)}
+                  </div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
+                  <div style={{ color: "var(--accent-primary)", fontWeight: 700, fontSize: "0.92rem" }}>
+                    {fmt(inc.amount, inc.currency)}
+                  </div>
+                  {statusBadge(inc.status)}
                 </div>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
-                <div style={{ color: "var(--accent-primary)", fontWeight: 700, fontSize: "0.92rem" }}>
-                  {fmt(inc.amount, inc.currency)}
-                </div>
-                {statusBadge(inc.status)}
-              </div>
-            </div>
-          ))
+            ))}
+
+            {data.recent.length > 5 && (
+              <button
+                onClick={() => setShowAll(!showAll)}
+                style={{
+                  width: "100%", marginTop: 10, padding: "9px 0",
+                  background: "transparent", border: "1px solid var(--border)",
+                  borderRadius: 10, color: "var(--accent-primary)",
+                  fontSize: "0.82rem", fontWeight: 600, cursor: "pointer",
+                }}
+              >
+                {showAll
+                  ? "Yopish ⌃"
+                  : `Yana ko'rsatish (${data.recent.length - 5} ta) ⌄`}
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>
