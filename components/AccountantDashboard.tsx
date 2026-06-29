@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { fetchAccountant } from "@/lib/api";
 import type { AccountantData, AccountantManager } from "@/lib/api";
-import { DEBT_DOT } from "@/lib/debt";
+import { DEBT_COLOR } from "@/lib/debt";
 
 const GREEN = "#22c55e";
 const YELLOW = "#f59e0b";
@@ -54,62 +54,51 @@ function PeriodTabs({
   );
 }
 
-// ── Bitta menejer kartasi ──────────────────────────────────────────────────────
+// ── Bitta menejer kartasi (to'liq qarzdorlik ma'lumoti) ─────────────────────────
 function ManagerCard({ m }: { m: AccountantManager }) {
   const hasPending = m.pending > 0.005;
-
-  // Topshirish holatiga qarab belgi, border va fon
-  const badge =
-    m.submit_status === "full"
-      ? { text: "✓ topshirdi", color: GREEN }
-      : m.submit_status === "partial"
-      ? { text: "◐ qisman", color: YELLOW }
-      : null;
-
-  const accent =
-    m.submit_status === "full" ? GREEN :
-    m.submit_status === "partial" ? YELLOW :
-    "var(--border)";
-
-  const ringColor =
-    m.submit_status === "full" ? GREEN + "33" :
-    m.submit_status === "partial" ? YELLOW + "44" :
-    "var(--border)";
-
-  const bg =
-    m.submit_status === "partial" ? YELLOW + "0d" :
-    m.submit_status === "full" ? GREEN + "08" :
-    "transparent";
+  const debtColor  = m.debt_level ? DEBT_COLOR[m.debt_level] : GREEN;
+  // Rang KARTA border/foni'da — qarzdorlik darajasi bo'yicha (toza, nuqtasiz)
+  const accent = hasPending ? debtColor : GREEN;
+  const days   = m.oldest_days ?? 0;
 
   return (
     <div
       style={{
-        border: `1px solid ${ringColor}`,
+        border: `1px solid ${accent}33`,
         borderLeft: `3px solid ${accent}`,
         borderRadius: 10,
-        padding: "10px 12px",
+        padding: "12px 14px",
         marginBottom: 10,
-        background: bg,
+        background: `${accent}0d`,
       }}
     >
-      {/* Ism + topshirish belgisi */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-        <span style={{ fontWeight: 700, fontSize: "0.9rem", display: "flex", alignItems: "center", gap: 5 }}>
-          {m.debt_level && <span style={{ fontSize: "0.8rem" }}>{DEBT_DOT[m.debt_level]}</span>}
-          {m.name}
-        </span>
-        {badge && (
-          <span style={{ color: badge.color, fontSize: "0.72rem", fontWeight: 700 }}>{badge.text}</span>
-        )}
+      <div style={{ fontWeight: 700, fontSize: "0.9rem", marginBottom: 8 }}>{m.name}</div>
+      <div style={{ height: 1, background: "var(--border)", marginBottom: 8 }} />
+
+      {/* ✅ Topshirgan */}
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: hasPending ? 6 : 0 }}>
+        <span style={{ color: "var(--text-secondary)", fontSize: "0.82rem" }}>✅ Topshirgan:</span>
+        <span style={{ color: GREEN, fontWeight: 700, fontSize: "0.85rem" }}>{fmtUSD(m.submitted)}</span>
       </div>
 
-      {/* Summalar */}
-      <div style={{ display: "flex", gap: 16, fontSize: "0.85rem" }}>
-        <span style={{ color: GREEN, fontWeight: 600 }}>✅ {fmtUSD(m.submitted)}</span>
-        {hasPending && (
-          <span style={{ color: YELLOW, fontWeight: 600 }}>⏳ {fmtUSD(m.pending)}</span>
-        )}
-      </div>
+      {/* ⏳ Qarzi (debt_level rangida) */}
+      {hasPending && (
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: days > 0 ? 6 : 0 }}>
+          <span style={{ color: "var(--text-secondary)", fontSize: "0.82rem" }}>⏳ Qarzi:</span>
+          <span style={{ color: debtColor, fontWeight: 700, fontSize: "0.85rem" }}>{fmtUSD(m.pending)}</span>
+        </div>
+      )}
+
+      {/* ⏱ Eng eski qarz */}
+      {hasPending && days > 0 && (
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <span style={{ color: "var(--text-secondary)", fontSize: "0.82rem" }}>⏱ Eng eski:</span>
+          <span style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: "0.82rem" }}>
+            {days} kun oldin
+          </span>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,9 +6,8 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
 } from "recharts";
-import type { OwnerDashboardData, WorkerStat, OwnerPeriodData, ManagerStat, DebtLevel } from "@/lib/api";
+import type { OwnerDashboardData, WorkerStat, OwnerPeriodData, ManagerStat } from "@/lib/api";
 import CategoryCard from "@/components/CategoryCard";
-import { DEBT_DOT } from "@/lib/debt";
 
 const WORKER_COLORS = ["#00d084", "#00ff9d", "#ffd700", "#ffa502", "#ff6b9d"];
 const MEDALS        = ["🥇", "🥈", "🥉"];
@@ -142,10 +141,6 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
   const grandTotal  = pdata?.grand_total ?? data.total_month;
   const periodLabel = pdata?.period_label ?? "";
 
-  // Qarzdorlik rangi — ism bo'yicha (data.workers'da debt_level bor)
-  const debtByName: Record<string, DebtLevel> = {};
-  data.workers.forEach((w) => { if (w.debt_level) debtByName[w.name] = w.debt_level; });
-
   return (
     <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 12 }}>
 
@@ -240,9 +235,6 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
               alignItems: "center",
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                {debtByName[m.name] && (
-                  <span style={{ fontSize: "0.8rem" }}>{DEBT_DOT[debtByName[m.name]]}</span>
-                )}
                 <span style={{ fontSize: "1rem" }}>{MEDALS[i] || `${i + 1}.`}</span>
                 <span style={{
                   fontSize: "0.85rem",
