@@ -20,6 +20,15 @@ function fmt(amount: number, currency?: string) {
   return "$" + new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
 }
 
+const UZ_M_FULL = ["yan", "fev", "mar", "apr", "may", "iyun",
+                   "iyul", "avg", "sen", "okt", "noy", "dek"];
+// "2026-06-08" → "8-iyun" (tooltip sanasi)
+function prettyDate(d: string): string {
+  const p = String(d).split("-");
+  if (p.length !== 3) return d;
+  return `${Number(p[2])}-${UZ_M_FULL[Number(p[1]) - 1] ?? ""}`;
+}
+
 function relDate(dateStr: string): string {
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
   if (diff === 0) return "Bugun";
@@ -73,6 +82,11 @@ export default function WorkerDashboard({
   const weekPct = data.month_total > 0
     ? Math.min(100, (data.week_total / data.month_total) * 100)
     : 0;
+
+  // X o'qi UNIKAL "date" bo'yicha — tooltip aniq nuqtani topishi uchun.
+  // Tik yorliqlari (Du/Se.. yoki oy) uchun date→day xaritasi.
+  const dayByDate: Record<string, string> = {};
+  chartData.forEach((p) => { dayByDate[String(p.date)] = String(p.day); });
 
   return (
     <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -249,13 +263,28 @@ export default function WorkerDashboard({
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#1e3a1e" />
-            <XAxis dataKey="day" tick={{ fill: "#7ab87a", fontSize: 11 }} axisLine={false} tickLine={false} />
+            <XAxis dataKey="date"
+              tickFormatter={(d) => dayByDate[String(d)] ?? String(d)}
+              interval="preserveStartEnd" minTickGap={18}
+              tick={{ fill: "#7ab87a", fontSize: 11 }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill: "#7ab87a", fontSize: 10 }} axisLine={false} tickLine={false}
               tickFormatter={(v: number) => v === 0 ? "" : `$${v}`} />
             <Tooltip
-              contentStyle={{ background: "#132213", border: "1px solid #1e3a1e", borderRadius: 10, fontSize: 12 }}
-              labelStyle={{ color: "#e8f5e8", fontWeight: 600 }}
-              formatter={(v) => [`$${Number(v).toFixed(2)}`, "Daromad"]}
+              content={({ active, payload }) => {
+                if (!active || !payload || !payload.length) return null;
+                const pt = payload[0].payload as { date?: string; total?: number };
+                return (
+                  <div style={{ background: "#132213", border: "1px solid #1e3a1e",
+                                borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>
+                    <div style={{ color: "#e8f5e8", fontWeight: 600, marginBottom: 2 }}>
+                      {prettyDate(String(pt.date ?? ""))}
+                    </div>
+                    <div style={{ color: "#00d084", fontWeight: 700 }}>
+                      ${Number(pt.total ?? 0).toFixed(2)}
+                    </div>
+                  </div>
+                );
+              }}
             />
             <Area type="monotone" dataKey="total" stroke="#00d084" strokeWidth={2}
               fill="url(#gGreen)" dot={false} activeDot={{ r: 4, fill: "#00d084" }} />
