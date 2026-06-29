@@ -126,28 +126,29 @@ export default function WorkerDashboard({
         </div>
       </div>
 
-      {/* ── Bu oy kirimlar (oylik statistika) ──────── */}
+      {/* ── Stat kartalar (oylik ma'lumot) ─────────── */}
       {(() => {
         const ms = data.month_stats ?? {
           total_count: data.month_count,
           submitted_count: 0,
           pending_count: data.month_count,
         };
-        const Row = ({ label, val, color }: { label: string; val: number; color: string }) => (
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 0" }}>
-            <span style={{ color: "var(--text-secondary)", fontSize: "0.84rem" }}>{label}</span>
-            <span style={{ color, fontWeight: 700, fontSize: "0.9rem" }}>{val} ta</span>
-          </div>
-        );
+        const cards = hideSubmission
+          ? [{ icon: "📦", val: ms.total_count, label: "Bu oy kirimlar" }]
+          : [
+              { icon: "📦", val: ms.total_count,     label: "Kirimlar"    },
+              { icon: "✅", val: ms.submitted_count, label: "Topshirildi" },
+              { icon: "⏳", val: ms.pending_count,   label: "Kutilmoqda"  },
+            ];
         return (
-          <div className="card">
-            <div style={{ fontWeight: 600, fontSize: "0.85rem", marginBottom: 10 }}>
-              📦 Bu oy kirimlar
-            </div>
-            <div style={{ height: 1, background: "var(--border)", marginBottom: 6 }} />
-            <Row label="📥 Jami:"        val={ms.total_count}     color="var(--text-primary)" />
-            <Row label="✅ Topshirildi:" val={ms.submitted_count} color="#22c55e" />
-            <Row label="⏳ Kutilmoqda:"  val={ms.pending_count}   color="#f59e0b" />
+          <div style={{ display: "grid", gridTemplateColumns: hideSubmission ? "1fr" : "1fr 1fr 1fr", gap: 8 }}>
+            {cards.map(({ icon, val, label }) => (
+              <div key={label} className="card" style={{ textAlign: "center", padding: "12px 8px" }}>
+                <div style={{ fontSize: "1.3rem" }}>{icon}</div>
+                <div style={{ color: "var(--accent-primary)", fontWeight: 700, fontSize: "1.3rem" }}>{val}</div>
+                <div className="stat-label">{label}</div>
+              </div>
+            ))}
           </div>
         );
       })()}
