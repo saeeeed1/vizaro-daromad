@@ -66,6 +66,12 @@ export interface Category {
 // Fallback — API categories qaytarmasa yoki bo'sh bo'lsa
 export const CATEGORY_FALLBACK: Category[] = [];
 
+export interface MonthStats {
+  total_count: number;
+  submitted_count: number;
+  pending_count: number;
+}
+
 export interface WorkerDashboardData {
   role: "manager" | "accountant";
   week_total: number;
@@ -74,6 +80,7 @@ export interface WorkerDashboardData {
   month_count: number;
   confirmed_count: number;
   pending_count: number;
+  month_stats?: MonthStats;
   chart: ChartPoint[];
   recent: IncomeItem[];
   pending_submissions?: PendingSubmission[];
