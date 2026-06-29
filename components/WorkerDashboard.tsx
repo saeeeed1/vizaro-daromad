@@ -7,6 +7,7 @@ import {
 } from "recharts";
 import type { WorkerDashboardData, IncomeItem } from "@/lib/api";
 import CategoryCard from "@/components/CategoryCard";
+import { DEBT_COLOR } from "@/lib/debt";
 
 const PERIODS = ["1 oy", "3 oy", "6 oy", "1 yil"] as const;
 const PERIOD_MAP: Record<string, string> = {
@@ -128,6 +129,44 @@ export default function WorkerDashboard({
           </div>
         ))}
       </div>
+
+      {/* ── Qarzdorlik holati ──────────────────────── */}
+      {data.debt && data.debt.remaining > 0.005 && (() => {
+        const dc = DEBT_COLOR[data.debt.level];
+        return (
+          <div
+            style={{
+              border: `1px solid ${dc}55`,
+              borderLeft: `4px solid ${dc}`,
+              borderRadius: 14,
+              padding: "14px 16px",
+              background: `${dc}12`,
+            }}
+          >
+            <div style={{ fontWeight: 700, fontSize: "0.9rem", color: dc, marginBottom: 10 }}>
+              ⚠️ Qarzdorlik holati
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+              <span style={{ color: "var(--text-secondary)", fontSize: "0.84rem" }}>Topshirilmagan:</span>
+              <span style={{ color: dc, fontWeight: 700, fontSize: "0.9rem" }}>
+                ${data.debt.remaining.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ color: "var(--text-secondary)", fontSize: "0.84rem" }}>⏱ Eng eski:</span>
+              <span style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: "0.84rem" }}>
+                {data.debt.oldest_days} kun oldin
+              </span>
+            </div>
+            <div style={{
+              marginTop: 10, paddingTop: 10, borderTop: `1px solid ${dc}33`,
+              color: "var(--text-muted)", fontSize: "0.78rem", textAlign: "center",
+            }}>
+              Iltimos, bugalterga topshiring
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Pending submissions (qizil karta) ───────── */}
       {data.pending_submissions && data.pending_submissions.length > 0 && (

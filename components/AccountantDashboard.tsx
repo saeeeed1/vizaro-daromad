@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { fetchAccountant } from "@/lib/api";
 import type { AccountantData, AccountantManager } from "@/lib/api";
+import { DEBT_DOT } from "@/lib/debt";
 
 const GREEN = "#22c55e";
 const YELLOW = "#f59e0b";
@@ -93,7 +94,10 @@ function ManagerCard({ m }: { m: AccountantManager }) {
     >
       {/* Ism + topshirish belgisi */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-        <span style={{ fontWeight: 700, fontSize: "0.9rem" }}>{m.name}</span>
+        <span style={{ fontWeight: 700, fontSize: "0.9rem", display: "flex", alignItems: "center", gap: 5 }}>
+          {m.debt_level && <span style={{ fontSize: "0.8rem" }}>{DEBT_DOT[m.debt_level]}</span>}
+          {m.name}
+        </span>
         {badge && (
           <span style={{ color: badge.color, fontSize: "0.72rem", fontWeight: 700 }}>{badge.text}</span>
         )}

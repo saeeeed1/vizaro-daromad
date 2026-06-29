@@ -37,6 +37,14 @@ export interface PendingListItem {
   total: number;
 }
 
+export type DebtLevel = "red" | "yellow" | "green";
+
+export interface Debt {
+  remaining: number;
+  oldest_days: number;
+  level: DebtLevel;
+}
+
 export interface WorkerStat {
   id: number;
   name: string;
@@ -44,6 +52,9 @@ export interface WorkerStat {
   month_total: number;
   sub_status: "full" | "partial" | "none";
   percentage: number;
+  debt_level?: DebtLevel;
+  oldest_days?: number;
+  debt_remaining?: number;
 }
 
 export interface Category {
@@ -68,6 +79,7 @@ export interface WorkerDashboardData {
   pending_submissions?: PendingSubmission[];
   pending_total_all?: number;
   categories?: Category[];
+  debt?: Debt;
 }
 
 export interface OwnerDashboardData {
@@ -91,6 +103,9 @@ export interface AccountantManager {
   submitted: number;   // tasdiqlangan (confirmed) USD
   pending: number;     // hali tasdiqlanmagan USD
   submit_status: "full" | "partial" | "none"; // topshirish holati
+  debt_level?: DebtLevel;
+  oldest_days?: number;
+  debt_remaining?: number;
 }
 
 export interface AccountantData {
