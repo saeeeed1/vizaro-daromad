@@ -55,8 +55,8 @@ function BottomTabs({
         zIndex: 100,
         background: "#111",
         borderTop: "1px solid #222",
-        paddingBottom: "max(env(safe-area-inset-bottom), 20px)",
-        height: `calc(56px + max(env(safe-area-inset-bottom), 20px))`,
+        paddingBottom: "max(var(--app-bottom, 0px), env(safe-area-inset-bottom, 0px), 20px)",
+        height: `calc(56px + max(var(--app-bottom, 0px), env(safe-area-inset-bottom, 0px), 20px))`,
         alignItems: "flex-start",
         paddingTop: "8px",
         display: "flex",
@@ -156,7 +156,7 @@ export default function DashboardPage() {
   if (user.role === "accountant") {
     return (
       <>
-        <div style={{ paddingBottom: `calc(90px + max(env(safe-area-inset-bottom), 20px))` }}>
+        <div style={{ paddingBottom: `calc(90px + max(var(--app-bottom, 0px), env(safe-area-inset-bottom, 0px), 20px))` }}>
           {activeTab === "manager" && workerData ? (
             <WorkerDashboard data={workerData} name={user.name || user.username} hideSubmission={true} userId={user.user_id} />
           ) : activeTab === "accountant" ? (

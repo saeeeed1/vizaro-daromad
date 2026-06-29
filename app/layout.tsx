@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import TelegramInit from "@/components/TelegramInit";
 
 export const metadata: Metadata = {
   title: "Vizaro Daromad",
@@ -11,6 +12,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  // viewport-fit=cover — env(safe-area-inset-*) qiymatlarini faollashtiradi
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -20,7 +23,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script src="https://telegram.org/js/telegram-web-app.js" />
       </head>
-      <body>{children}</body>
+      <body>
+        <TelegramInit />
+        {children}
+      </body>
     </html>
   );
 }

@@ -24,6 +24,11 @@
   --danger:         #ff4757;
   --warning:        #ffa502;
   --success:        #00c07a;
+
+  /* Safe area — TelegramInit (JS) Telegram qiymatlari bilan yangilaydi.
+     JS ishlamasa 0 qoladi; ishlatishda env() fallback bilan max() olinadi. */
+  --app-top:    0px;
+  --app-bottom: 0px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,7 +39,13 @@ html, body {
   font-family: -apple-system, "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
-  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Fullscreen'da Telegram X/options tugmalari kontent ustiga tushmasligi uchun —
+   barcha sahifa kontenti yuqori safe-area'dan keyin boshlanadi. */
+body {
+  padding-top: max(var(--app-top, 0px), env(safe-area-inset-top, 0px));
 }
 
 .card {
@@ -97,4 +108,4 @@ html, body {
   100% { background-position:-200% 0; }
 }
 
-.safe-bottom { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+.safe-bottom { padding-bottom: max(16px, var(--app-bottom, 0px), env(safe-area-inset-bottom, 0px)); }
