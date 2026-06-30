@@ -8,6 +8,7 @@ import {
 } from "recharts";
 import type { OwnerDashboardData, WorkerStat, OwnerPeriodData, ManagerStat } from "@/lib/api";
 import CategoryCard from "@/components/CategoryCard";
+import { tgHeaders } from "@/lib/tgAuth";
 
 const WORKER_COLORS = ["#00d084", "#00ff9d", "#ffd700", "#ffa502", "#ff6b9d"];
 const MEDALS        = ["🥇", "🥈", "🥉"];
@@ -74,7 +75,7 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
   // Mavjud oylar (Excel yuklash dropdown'i uchun)
   useEffect(() => {
     if (!userId) return;
-    fetch(`/api/owner/months?user_id=${userId}`)
+    fetch(`/api/owner/months?user_id=${userId}`, { headers: tgHeaders() })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         const ms: string[] = d?.months ?? [];
@@ -94,7 +95,7 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
     try {
       const res = await fetch("/api/owner/request-excel", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: tgHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: userId, period }),
       });
       setToast(res.ok ? "✅ Excel Telegram'ga yuborildi" : "⚠️ Yuborib bo'lmadi");
@@ -110,7 +111,7 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
     if (!userId) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/owner?user_id=${userId}&period=${apiPeriod}`);
+      const res = await fetch(`/api/owner?user_id=${userId}&period=${apiPeriod}`, { headers: tgHeaders() });
       if (res.ok) setPdata(await res.json() as OwnerPeriodData);
     } catch {
       // network error — keep previous data

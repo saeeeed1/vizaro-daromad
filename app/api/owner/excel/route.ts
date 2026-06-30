@@ -7,10 +7,11 @@ const API_BASE = process.env.API_URL ?? "http://localhost:8081";
 export async function GET(req: NextRequest) {
   const user_id = req.nextUrl.searchParams.get("user_id");
   const month   = req.nextUrl.searchParams.get("month") ?? "";
+  const initData = req.headers.get("x-telegram-init-data") || "";
   try {
     const res = await fetch(
       `${API_BASE}/api/owner/excel?user_id=${user_id}&month=${month}`,
-      { cache: "no-store" }
+      { cache: "no-store", headers: { "X-Telegram-Init-Data": initData } }
     );
     if (!res.ok) {
       const body = await res.text();

@@ -1,3 +1,5 @@
+import { tgHeaders } from "./tgAuth";
+
 export interface UserInfo {
   user_id: number;
   role: "manager" | "accountant" | "owner" | "unknown";
@@ -127,7 +129,8 @@ export interface AccountantData {
 }
 
 async function apiFetch(path: string): Promise<unknown> {
-  const res = await fetch(path, { cache: "no-store" });
+  // BOSQICH 1: XOM initData header'da yuboriladi (API hali tekshirmaydi); user_id URL'da zaxira.
+  const res = await fetch(path, { cache: "no-store", headers: tgHeaders() });
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();
 }

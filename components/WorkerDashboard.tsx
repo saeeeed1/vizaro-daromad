@@ -8,6 +8,7 @@ import {
 import type { WorkerDashboardData, IncomeItem } from "@/lib/api";
 import CategoryCard from "@/components/CategoryCard";
 import { DEBT_COLOR } from "@/lib/debt";
+import { tgHeaders } from "@/lib/tgAuth";
 
 const PERIODS = ["1 oy", "3 oy", "6 oy", "1 yil"] as const;
 const PERIOD_MAP: Record<string, string> = {
@@ -58,7 +59,7 @@ export default function WorkerDashboard({
   useEffect(() => {
     setPeriod("1 oy");
     setChartLoading(true);
-    fetch(`/api/dashboard?user_id=${userId}&period=month`)
+    fetch(`/api/dashboard?user_id=${userId}&period=month`, { headers: tgHeaders() })
       .then(r => r.json())
       .then(j => { if (j.chart) setChartData(j.chart); })
       .catch(() => setChartData(data.chart))
@@ -70,7 +71,7 @@ export default function WorkerDashboard({
     setPeriod(label);
     setChartLoading(true);
     try {
-      const res  = await fetch(`/api/dashboard?user_id=${userId}&period=${PERIOD_MAP[label]}`);
+      const res  = await fetch(`/api/dashboard?user_id=${userId}&period=${PERIOD_MAP[label]}`, { headers: tgHeaders() });
       const json = await res.json();
       if (json.chart) setChartData(json.chart);
     } catch {
