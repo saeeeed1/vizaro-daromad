@@ -175,19 +175,6 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
             {fmt(data.pending_total)}
           </span>
         </div>
-
-        {/* Jami qarzdorlik — JORIY OY (Toshkent, created_at+5h); har oy 0 dan boshlanadi */}
-        <div style={{ height: 1, background: "var(--border)", margin: "10px 0 8px" }} />
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <span className="stat-label">Jami qarzdorlik</span>
-          <span style={{
-            color: (data.debt_total_all ?? 0) > 0.005 ? "var(--danger)" : "var(--text-muted)",
-            fontWeight: 700,
-            fontSize: "0.85rem",
-          }}>
-            {fmt(data.debt_total_all ?? 0)}
-          </span>
-        </div>
       </div>
 
       {/* ── Reyting + period tabs ─────────────────── */}
