@@ -6,6 +6,7 @@ const CAT_META: Record<string, { emoji: string; color: string }> = {
   "Mehmonxona": { emoji: "🏨", color: "#a855f7" },  // binafsha
   "Viza":       { emoji: "📋", color: "#22c55e" },  // yashil
   "Tur":        { emoji: "🗺", color: "#f59e0b" },  // sariq
+  "Poyezd":     { emoji: "🚆", color: "#14b8a6" },  // teal
   "Boshqa":     { emoji: "📦", color: "#6b7280" },  // kulrang
 };
 
