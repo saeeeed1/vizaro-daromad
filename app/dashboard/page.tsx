@@ -122,10 +122,10 @@ export default function DashboardPage() {
         setUser(u);
 
         if (u.role === "accountant") {
-          const wd = await fetchDashboard(uid, "week");
+          const wd = await fetchDashboard(uid, "month");
           setWorkerData(wd as WorkerDashboardData);
         } else {
-          const d = await fetchDashboard(uid, "week");
+          const d = await fetchDashboard(uid, "month");
           setData(d);
         }
       })
