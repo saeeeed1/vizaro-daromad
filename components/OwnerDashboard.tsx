@@ -292,20 +292,6 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
         </div>
       </div>
 
-      {/* ── Stats grid ────────────────────────────── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-        <div className="card" style={{ textAlign: "center" }}>
-          <div className="stat-label">Bu hafta</div>
-          <div className="stat-value">{fmt(data.total_week)}</div>
-        </div>
-        <div className="card" style={{ textAlign: "center" }}>
-          <div className="stat-label">Bu oy</div>
-          <div className="stat-value" style={{ color: "var(--accent-second)" }}>
-            {fmt(data.total_month)}
-          </div>
-        </div>
-      </div>
-
       {/* ── Pending karta (sariq) ─────────────────── */}
       {data.pending_list && data.pending_list.length > 0 && (
         <div style={{
