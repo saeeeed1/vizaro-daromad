@@ -97,7 +97,7 @@ export interface OwnerDashboardData {
   total_month: number;
   submitted_total: number;
   pending_total: number;      // OYLIK statistika (bu oy topshirilmagan)
-  debt_total_all?: number;    // BUTUN VAQT qarzdorlik (oy almashsa ham saqlanadi)
+  debt_total_all?: number;    // JORIY OY jami qarzdorlik (Toshkent, created_at+5h)
   workers: WorkerStat[];
   chart: ChartPoint[];
   pending_list?: PendingListItem[];

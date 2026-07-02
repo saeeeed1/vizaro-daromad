@@ -56,8 +56,8 @@ function PeriodTabs({
 
 // ── Bitta menejer kartasi (to'liq qarzdorlik ma'lumoti) ─────────────────────────
 function ManagerCard({ m }: { m: AccountantManager }) {
-  // Qarz = BUTUN VAQT (debt_remaining) — oy almashsa ham saqlanadi.
-  // m.pending = OYLIK statistika (topshirilmagan), qarz signali uchun ishlatilmaydi.
+  // Qarz = JORIY OY (debt_remaining, backend oy-filtrли: created_at+5h).
+  // Har oy 0 dan boshlanadi; eski oy qarzi eski oyda qoladi.
   const debt       = m.debt_remaining ?? 0;
   const hasPending = debt > 0.005;
   const debtColor  = m.debt_level ? DEBT_COLOR[m.debt_level] : GREEN;

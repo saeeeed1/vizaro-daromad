@@ -176,7 +176,7 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
           </span>
         </div>
 
-        {/* Jami qarzdorlik — BUTUN VAQT (oy almashsa ham saqlanadi, oy-filtrли emas) */}
+        {/* Jami qarzdorlik — JORIY OY (Toshkent, created_at+5h); har oy 0 dan boshlanadi */}
         <div style={{ height: 1, background: "var(--border)", margin: "10px 0 8px" }} />
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <span className="stat-label">Jami qarzdorlik</span>
