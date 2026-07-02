@@ -56,7 +56,10 @@ function PeriodTabs({
 
 // ── Bitta menejer kartasi (to'liq qarzdorlik ma'lumoti) ─────────────────────────
 function ManagerCard({ m }: { m: AccountantManager }) {
-  const hasPending = m.pending > 0.005;
+  // Qarz = BUTUN VAQT (debt_remaining) — oy almashsa ham saqlanadi.
+  // m.pending = OYLIK statistika (topshirilmagan), qarz signali uchun ishlatilmaydi.
+  const debt       = m.debt_remaining ?? 0;
+  const hasPending = debt > 0.005;
   const debtColor  = m.debt_level ? DEBT_COLOR[m.debt_level] : GREEN;
   // Rang KARTA border/foni'da — qarzdorlik darajasi bo'yicha (toza, nuqtasiz)
   const accent = hasPending ? debtColor : GREEN;
@@ -86,7 +89,7 @@ function ManagerCard({ m }: { m: AccountantManager }) {
       {hasPending && (
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: days > 0 ? 6 : 0 }}>
           <span style={{ color: "var(--text-secondary)", fontSize: "0.82rem" }}>⏳ Qarzi:</span>
-          <span style={{ color: debtColor, fontWeight: 700, fontSize: "0.85rem" }}>{fmtUSD(m.pending)}</span>
+          <span style={{ color: debtColor, fontWeight: 700, fontSize: "0.85rem" }}>{fmtUSD(debt)}</span>
         </div>
       )}
 
