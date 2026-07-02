@@ -149,12 +149,26 @@ export const fetchAccountant = (userId: number, period = "week") =>
   apiFetch(`/api/accountant?user_id=${userId}&period=${period}`) as Promise<AccountantData>;
 
 export interface ManagerStat {
+  wid?: number;   // menejer telegram user_id (detal ekraniga o'tish uchun)
   name: string;
   total: number;
   count: number;
   rank: number;
   percentage: number;
 }
+
+export interface ManagerDetail {
+  name: string;
+  period_label: string;
+  total: number;
+  submitted: number;
+  debt: Debt;
+  categories: Category[];
+  incomes: IncomeItem[];
+}
+
+export const fetchManagerDetail = (ownerId: number, managerId: number, period = "month") =>
+  apiFetch(`/api/owner/manager?user_id=${ownerId}&manager_id=${managerId}&period=${period}`) as Promise<ManagerDetail>;
 
 export interface OwnerPeriodData {
   managers: ManagerStat[];

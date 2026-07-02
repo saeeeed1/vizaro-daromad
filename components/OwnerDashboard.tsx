@@ -9,6 +9,7 @@ import {
 import type { OwnerDashboardData, WorkerStat, OwnerPeriodData, ManagerStat } from "@/lib/api";
 import CategoryCard from "@/components/CategoryCard";
 import { tgHeaders } from "@/lib/tgAuth";
+import { useRouter } from "next/navigation";
 
 const WORKER_COLORS = ["#00d084", "#00ff9d", "#ffd700", "#ffa502", "#ff6b9d"];
 const MEDALS        = ["🥇", "🥈", "🥉"];
@@ -59,6 +60,7 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
   const [xlPeriod, setXlPeriod] = useState("1");   // "1"|"3"|"6"|"12"
   const [sending,  setSending]  = useState(false);
   const [toast,    setToast]    = useState("");
+  const router = useRouter();
 
   // Telegram user ID — always available in WebApp context
   const userId: number | undefined =
@@ -219,7 +221,9 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
             ⌛ Yuklanmoqda...
           </div>
         ) : (managers || []).map((m, i) => (
-          <div key={m.name} style={{
+          <div key={m.name}
+            onClick={() => m.wid && router.push(`/manager/${m.wid}?period=${PERIOD_API[period]}`)}
+            style={{
             display: "flex",
             flexDirection: "column",
             gap: 6,
@@ -228,7 +232,11 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
             background: "#161616",
             borderRadius: 10,
             border: "1px solid #222",
-          }}>
+            cursor: m.wid ? "pointer" : "default",
+            transition: "background 0.15s",
+          }}
+            onTouchStart={(e) => { if (m.wid) e.currentTarget.style.background = "#1e1e1e"; }}
+            onTouchEnd={(e) => { e.currentTarget.style.background = "#161616"; }}>
             {/* Yuqori qator: medal + ism + summa */}
             <div style={{
               display: "flex",
@@ -247,11 +255,14 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
                   color: "#555",
                 }}>{m.count} ta</span>
               </div>
-              <span style={{
-                fontSize: "0.9rem",
-                fontWeight: 700,
-                color: "#00c07a",
-              }}>${m.total.toFixed(0)}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{
+                  fontSize: "0.9rem",
+                  fontWeight: 700,
+                  color: "#00c07a",
+                }}>${m.total.toFixed(0)}</span>
+                <span style={{ color: "#555", fontSize: "0.9rem" }}>›</span>
+              </div>
             </div>
             {/* Progress bar */}
             <div style={{
