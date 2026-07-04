@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { fetchAccountant } from "@/lib/api";
 import type { AccountantData, AccountantManager } from "@/lib/api";
 import { DEBT_COLOR } from "@/lib/debt";
-import ExpensesCard from "@/components/ExpensesCard";
+import { useRouter } from "next/navigation";
 
 const GREEN = "#22c55e";
 const YELLOW = "#f59e0b";
@@ -146,6 +146,7 @@ export default function AccountantDashboard({
   const [data, setData] = useState<AccountantData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     let alive = true;
@@ -169,6 +170,19 @@ export default function AccountantDashboard({
           {name}{data ? ` · ${data.period_label}` : ""}
         </div>
       </div>
+
+      {/* 💸 Rasxodlar — alohida ekran */}
+      <button
+        onClick={() => router.push("/expenses")}
+        style={{
+          width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center",
+          background: "#161616", border: "1px solid #222", borderRadius: 12, padding: "14px 16px",
+          cursor: "pointer", color: "#e0e0e0", fontSize: "0.9rem", fontWeight: 600,
+        }}
+      >
+        <span>💸 Rasxodlar (bu oy)</span>
+        <span style={{ color: "var(--text-muted)" }}>→</span>
+      </button>
 
       {/* Davr tablari */}
       <PeriodTabs period={period} onChange={setPeriod} />
@@ -196,9 +210,6 @@ export default function AccountantDashboard({
               data.managers.map((m) => <ManagerCard key={m.worker_id} m={m} />)
             )}
           </div>
-
-          {/* 💸 Rasxod — faqat ko'rish (buxgalter) */}
-          <ExpensesCard userId={userId} />
         </>
       ) : null}
     </div>

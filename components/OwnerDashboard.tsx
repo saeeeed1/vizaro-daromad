@@ -10,7 +10,6 @@ import type { OwnerDashboardData, WorkerStat, OwnerPeriodData, ManagerStat } fro
 import CategoryCard from "@/components/CategoryCard";
 import { tgHeaders } from "@/lib/tgAuth";
 import { useRouter } from "next/navigation";
-import ExpensesCard from "@/components/ExpensesCard";
 
 const WORKER_COLORS = ["#00d084", "#00ff9d", "#ffd700", "#ffa502", "#ff6b9d"];
 const MEDALS        = ["🥇", "🥈", "🥉"];
@@ -179,6 +178,19 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
           </span>
         </div>
       </div>
+
+      {/* 💸 Rasxodlar — alohida ekran */}
+      <button
+        onClick={() => router.push("/expenses")}
+        style={{
+          width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center",
+          background: "#161616", border: "1px solid #222", borderRadius: 12, padding: "14px 16px",
+          cursor: "pointer", color: "#e0e0e0", fontSize: "0.9rem", fontWeight: 600,
+        }}
+      >
+        <span>💸 Rasxodlar (bu oy)</span>
+        <span style={{ color: "var(--text-muted)" }}>→</span>
+      </button>
 
       {/* ── Reyting + period tabs ─────────────────── */}
       <div className="card">
@@ -460,9 +472,6 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
           </div>
         )}
       </div>
-
-      {/* 💸 Rasxod — faqat ko'rish (owner) */}
-      {userId && <ExpensesCard userId={userId} />}
     </div>
   );
 }
