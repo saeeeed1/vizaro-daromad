@@ -170,6 +170,25 @@ export interface ManagerDetail {
 export const fetchManagerDetail = (ownerId: number, managerId: number, period = "month") =>
   apiFetch(`/api/owner/manager?user_id=${ownerId}&manager_id=${managerId}&period=${period}`) as Promise<ManagerDetail>;
 
+// ── Xarajat (rasxod) — faqat ko'rish (buxgalter + owner) ──
+export interface ExpenseItem {
+  id: number;
+  description: string;
+  amount: number;
+  currency: "USD" | "UZS";
+  category: string;
+  date: string;
+}
+
+export interface ExpensesData {
+  expenses: ExpenseItem[];
+  totals: { usd: number; uzs: number };
+  count: number;
+}
+
+export const fetchExpenses = (userId: number) =>
+  apiFetch(`/api/expenses?user_id=${userId}`) as Promise<ExpensesData>;
+
 export interface OwnerPeriodData {
   managers: ManagerStat[];
   period_label: string;

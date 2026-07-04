@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { fetchAccountant } from "@/lib/api";
 import type { AccountantData, AccountantManager } from "@/lib/api";
 import { DEBT_COLOR } from "@/lib/debt";
+import ExpensesCard from "@/components/ExpensesCard";
 
 const GREEN = "#22c55e";
 const YELLOW = "#f59e0b";
@@ -195,6 +196,9 @@ export default function AccountantDashboard({
               data.managers.map((m) => <ManagerCard key={m.worker_id} m={m} />)
             )}
           </div>
+
+          {/* 💸 Rasxod — faqat ko'rish (buxgalter) */}
+          <ExpensesCard userId={userId} />
         </>
       ) : null}
     </div>
