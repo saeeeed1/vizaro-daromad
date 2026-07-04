@@ -184,12 +184,12 @@ export default function OwnerDashboard({ data }: { data: OwnerDashboardData }) {
         onClick={() => router.push("/expenses")}
         style={{
           width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center",
-          background: "#161616", border: "1px solid #222", borderRadius: 12, padding: "14px 16px",
-          cursor: "pointer", color: "#e0e0e0", fontSize: "0.9rem", fontWeight: 600,
+          background: "rgba(255,71,87,0.1)", border: "1px solid rgba(255,71,87,0.3)", borderRadius: 12, padding: "14px 16px",
+          cursor: "pointer", color: "var(--danger)", fontSize: "0.9rem", fontWeight: 600,
         }}
       >
         <span>💸 Rasxodlar (bu oy)</span>
-        <span style={{ color: "var(--text-muted)" }}>→</span>
+        <span style={{ color: "var(--danger)" }}>→</span>
       </button>
 
       {/* ── Reyting + period tabs ─────────────────── */}
